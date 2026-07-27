@@ -40,6 +40,11 @@ header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:50;box-sh
 #rateBar{background:#9A3323;color:#fff;font-size:12.5px;padding:8px 18px;text-align:center;display:none}
 #rateBar.on{display:block}
 #rateBar.stale{background:#8A5A0A}
+#srcBar{background:#1E355E;color:#C6D2E6;font-size:11.5px;padding:6px 18px;text-align:center;display:none}
+#srcBar.on{display:block}
+#srcBar.ok{background:#1F5138;color:#CDE8D8}
+#srcBar.stale{background:#8A5A0A;color:#FFF0D6}
+#srcBar button{margin-left:10px;font-family:inherit;font-size:11px;padding:2px 9px;border-radius:5px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.15);color:#fff;cursor:pointer}
 #rateBar b{font-weight:700}
 #rateBar button{margin-left:10px;font-family:inherit;font-size:11.5px;padding:3px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;cursor:pointer}
 
@@ -206,6 +211,7 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
   </div>
  </div>
  <div id="rateBar"></div>
+ <div id="srcBar"></div>
 </header>
 <input type="file" id="fi" accept=".json" style="display:none" onchange="doLoad(this)">
 
@@ -453,7 +459,20 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
    <button class="x" onclick="closeM('rates')">×</button></div>
   <div class="mbd">
    <div class="msg w" style="margin:0 0 14px"><b>金利欄は毎月更新してください。</b>引下げ幅（優遇幅）は商品概要書の値を初期設定してあります。金利は毎月変わるため空欄です。各行のチラシから当初適用金利と店頭基準金利を入力してください。</div>
-   <div class="fld" style="max-width:320px;margin-bottom:16px"><label>金利の最終確認日</label><input type="date" id="rtDate">
+   <div class="sub-blk" style="margin:0 0 16px;background:#F2F7FF;border-color:#B9CDE8">
+    <div class="sbt">スタッフ全員で金利を共有する（Googleスプレッドシート連携）</div>
+    <div class="fld"><label>スプレッドシートのURL</label><input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/... を貼り付け">
+     <div class="note">「ファイル → 共有 → ウェブに公開 → カンマ区切り形式(.csv)」で発行したURLが確実です。通常の共有URLでも試行します。</div></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">
+     <button type="button" onclick="saveSheetUrl()" style="font-family:inherit;font-size:12px;padding:7px 13px;border-radius:6px;border:1px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer">保存して読み込む</button>
+     <button type="button" onclick="loadSheet()" style="font-family:inherit;font-size:12px;padding:7px 13px;border-radius:6px;border:1px solid var(--line-s);background:#fff;cursor:pointer">再読み込み</button>
+     <button type="button" onclick="copyTemplate()" style="font-family:inherit;font-size:12px;padding:7px 13px;border-radius:6px;border:1px solid var(--line-s);background:#fff;cursor:pointer">シートの雛形をコピー</button>
+     <button type="button" onclick="shareLink()" style="font-family:inherit;font-size:12px;padding:7px 13px;border-radius:6px;border:1px solid var(--gold);background:var(--gold);color:#2A2205;cursor:pointer;font-weight:500">スタッフ配布用リンクを作る</button>
+    </div>
+    <div class="note" id="sheetMsg" style="margin-top:8px"></div>
+    <textarea id="tmplBox" style="display:none;width:100%;height:150px;margin-top:9px;font-family:'Roboto Mono',monospace;font-size:11px;padding:8px;border:1px solid var(--line-s);border-radius:6px"></textarea>
+   </div>
+   <div class="fld" style="max-width:320px;margin-bottom:16px"><label>金利の最終確認日 <span class="hint">（シート連携時はシートの値が入ります）</span></label><input type="date" id="rtDate">
     <div class="note">この日から45日を過ぎると画面上部に警告が出ます。</div></div>
    <div class="scroll"><table class="rtbl" id="rtTable"></table></div>
    <div style="margin-top:16px"><h4 style="font-size:13px;color:var(--navy);margin-bottom:6px">確認先</h4>
@@ -476,14 +495,31 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
    <p>この式は各行のチラシの数字で検算済みです。たとえば富山第一銀行の2年固定は、店頭表示2.40％ − 最大引下げ1.30％ ＝ 1.10％となり、チラシの「最大引下げ後金利 年1.10％」と一致します。まるっと500の3年固定も、通常2.40％ − 1.35％ ＝ 1.05％で、チラシの新規適用金利の下限と一致します。</p>
    <p><b>引下げ幅（優遇幅）は商品概要書の値をあらかじめ入れてあります。</b>ここはあまり変わりません。毎月入れ替えるのは金利だけです。</p>
 
-   <h4>毎月やること（5分）</h4>
+   <h4>金利をスタッフ全員で共有する（初回だけの設定）</h4>
+   <p>Googleスプレッドシートに金利を書いておくと、全員の画面に自動で反映されます。誰か一人が更新すれば済みます。買取再販ボードと同じ仕組みです。</p>
+   <p><b>設定する人（1回だけ）</b></p>
+   <ol style="margin-left:20px">
+    <li>Googleドライブで<b>空のスプレッドシートを新規作成</b>する（名前は「住宅ローン金利」など）</li>
+    <li>このツールの「金利マスタ」を開き、<b>「シートの雛形をコピー」</b>を押す</li>
+    <li>スプレッドシートの<b>A1セル</b>をクリックして貼り付ける（Ctrl+V）。表の枠組みができます</li>
+    <li>「ファイル → 共有 → ウェブに公開」を開き、形式を<b>「カンマ区切り形式(.csv)」</b>にして「公開」。表示されたURLをコピー</li>
+    <li>金利マスタの「スプレッドシートのURL」に貼り付けて<b>「保存して読み込む」</b></li>
+    <li><b>「スタッフ配布用リンクを作る」</b>を押すとリンクがコピーされます。これをスタッフに送る</li>
+   </ol>
+   <p><b>スタッフ（受け取る側）</b>／送られたリンクを開いてブックマークするだけです。設定は不要で、以後は毎回そのリンクから開けば最新の金利になります。</p>
+
+   <h4>毎月やること（数分・担当者ひとりだけ）</h4>
    <ol style="margin-left:20px">
     <li>各行のチラシを見る</li>
-    <li>「金利マスタ」を開き、<b>当初適用金利</b>と<b>店頭基準金利</b>を入れる</li>
-    <li>最終確認日を入れて保存</li>
-    <li>「JSON書き出し」でファイルを保存し、GitHubに <code>rates.json</code> として置く（全スタッフに自動反映）</li>
+    <li><b>スプレッドシートを開いて数字を書き換える</b>（当初適用金利と店頭基準金利。変わっていなければそのまま）</li>
+    <li>1行目の<b>確認日</b>を今日の日付に直す</li>
    </ol>
+   <p>これだけです。保存も送信も不要で、スタッフが画面を開き直せば新しい金利になります。<b>引下げ幅は商品概要書の値なので、商品改定がない限り触りません。</b></p>
+   <p>画面の一番上に緑色の帯で「金利はスプレッドシートから取得しています」と出ていれば連携中です。読み込めなかったときはオレンジの帯になり、その端末に前回保存された金利で表示されます。</p>
    <p>45日を過ぎると警告が出ます。金利が空欄のままだと金額は「—」のままで、印刷物にも警告が入ります。</p>
+
+   <h4>スプレッドシートを使わない場合</h4>
+   <p>金利マスタに直接入力し、「JSON書き出し」でファイルを保存してGitHubのリポジトリ直下に <code>rates.json</code> として置く方法もあります。ただし更新のたびにGitHubへのアップロードが必要になるため、スプレッドシートのほうが手軽です。</p>
 
    <h4>最大優遇と最低優遇の切り替え</h4>
    <p>引下げ幅は<b>取引項目の該当数で変わります</b>。全項目に該当すれば最大、そうでなければ小さくなります。画面で「最大優遇／最低優遇」を切り替えると、両方の場合の月々が確認できます。</p>
@@ -642,8 +678,100 @@ function migrate(){
   Object.keys(BASE.banks[k]).forEach(f=>{if(M.banks[k][f]===undefined)M.banks[k][f]=BASE.banks[k][f];});});
  Object.values(M.banks).forEach(B=>{B.rates=Object.assign(emptyR(),B.rates||{});B.base=Object.assign(emptyR(),B.base||{});});
 }
-try{if(typeof fetch==='function'){fetch('rates.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
- if(j&&j.banks){M=j;migrate();try{localStorage.setItem('vivi_rates_v5',JSON.stringify(M))}catch(e){}onBank();}}).catch(()=>{});}}catch(e){}
+/* ===== Googleスプレッドシート連携 ===== */
+const BKCOL=['hokugin','rokin','rokina','ichigin','other'];
+const BKNAME={hokugin:'北陸銀行',rokin:'ろうきん500',rokina:'ろうきん500α',ichigin:'富山第一',other:'その他'};
+const SHEETROWS=[['date','確認日（YYYY-MM-DD）']]
+ .concat(FIXDEF.map(([k,lb])=>['r_'+k,'当初適用金利 '+lb]))
+ .concat(FIXDEF.map(([k,lb])=>['b_'+k,'店頭基準金利 '+lb]))
+ .concat([['discMax','終了後の引下げ幅（最大）'],['discMin','終了後の引下げ幅（最低）'],['uwRate','生活資金口座の金利']]);
+var SHEETSRC={url:'',ok:false,at:'',err:''};
+function normSheet(u){u=(u||'').trim();if(!u)return '';
+ if(/output=csv/.test(u)||/tqx=out:csv/.test(u))return u;
+ const m=u.match(/\/spreadsheets\/d\/(?:e\/)?([a-zA-Z0-9\-_]+)/);
+ return m?`https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv`:u;}
+function parseCSV(t){const rows=[];let r=[],c='',q=false;
+ for(let i=0;i<t.length;i++){const ch=t[i];
+  if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++;}else q=false;}else c+=ch;}
+  else if(ch==='"')q=true;
+  else if(ch===','){r.push(c);c='';}
+  else if(ch==='\n'){r.push(c);rows.push(r);r=[];c='';}
+  else if(ch!=='\r')c+=ch;}
+ if(c!==''||r.length){r.push(c);rows.push(r);}
+ return rows;}
+function applySheet(rows){
+ const map={};rows.forEach(r=>{if(r[0]&&r[0].trim())map[r[0].trim()]=r;});
+ let n=0;
+ SHEETROWS.forEach(([key])=>{const r=map[key];if(!r)return;
+  BKCOL.forEach((bk,i)=>{const B=M.banks[bk];if(!B)return;
+   const raw=(r[i+2]??'').toString().trim();
+   if(key==='date'){if(i===0&&raw){M.date=raw;n++;}return;}
+   const v=raw===''?null:parseFloat(raw);
+   if(raw!==''&&isNaN(v))return;
+   if(key.startsWith('r_'))B.rates[key.slice(2)]=v;
+   else if(key.startsWith('b_'))B.base[key.slice(2)]=v;
+   else B[key]=v;
+   if(raw!=='')n++;});});
+ return n;}
+function loadSheet(silent){
+ const raw=(($('sheetUrl')&&$('sheetUrl').value.trim())||SHEETSRC.url||'').trim();
+ const u=normSheet(raw||SHEETSRC.url);
+ if(!u){if(!silent)setSheetMsg('URLが入力されていません。','n');return Promise.resolve(false);}
+ if(typeof fetch!=='function')return Promise.resolve(false);
+ if(!silent)setSheetMsg('読み込み中…','');
+ return fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
+  .then(t=>{if(/^\s*</.test(t))throw new Error('CSVではありません。「ウェブに公開」でCSV形式のURLを発行してください。');
+   const n=applySheet(parseCSV(t));
+   if(!n)throw new Error('該当する行が見つかりません。雛形どおりの並びかご確認ください。');
+   SHEETSRC={url:raw,ok:true,at:new Date().toLocaleString('ja-JP'),err:''};
+   try{localStorage.setItem('vivi_sheet',raw);localStorage.setItem('vivi_rates_v5',JSON.stringify(M));}catch(e){}
+   if($('rtTable').innerHTML)buildRateTable();
+   onBank();
+   if(!silent)setSheetMsg(`読み込みました（${n}件）。金利の確認日：${M.date||'未設定'}`,'o');
+   return true;})
+  .catch(e=>{SHEETSRC.ok=false;SHEETSRC.err=e.message;SHEETSRC.url=raw;
+   if(!silent)setSheetMsg('読み込めませんでした：'+e.message,'n');
+   updateSrcBar();return false;});}
+function setSheetMsg(t,lv){const e=$('sheetMsg');if(!e)return;
+ e.innerHTML=t;e.style.color=lv==='n'?'var(--ng-tx)':lv==='o'?'var(--ok-tx)':'var(--soft)';}
+function saveSheetUrl(){const v=$('sheetUrl').value.trim();
+ try{localStorage.setItem('vivi_sheet',v)}catch(e){}
+ SHEETSRC.url=v;if(v)loadSheet();else{SHEETSRC.ok=false;setSheetMsg('連携を解除しました。','');updateSrcBar();}}
+function updateSrcBar(){const b=$('srcBar');if(!b)return;
+ if(SHEETSRC.ok){b.className='on ok';
+  b.innerHTML=`金利はスプレッドシートから取得しています（${SHEETSRC.at} 更新）<button onclick="loadSheet()">最新に更新</button>`;}
+ else if(SHEETSRC.url){b.className='on stale';
+  b.innerHTML=`スプレッドシートを読み込めませんでした。この端末に保存された金利で表示しています。<button onclick="openRates()">設定を確認</button>`;}
+ else b.className='';}
+function copyTemplate(){
+ const head=['key','項目'].concat(BKCOL.map(k=>BKNAME[k])).join('\t');
+ const body=SHEETROWS.map(([k,lb])=>[k,lb].concat(BKCOL.map(bk=>{
+  const B=M.banks[bk];if(!B)return '';
+  if(k==='date')return bk==='hokugin'?(M.date||''):'';
+  if(k.startsWith('r_'))return B.rates[k.slice(2)]??'';
+  if(k.startsWith('b_'))return B.base[k.slice(2)]??'';
+  return B[k]??'';})).join('\t')).join('\n');
+ const tsv=head+'\n'+body;
+ const box=$('tmplBox');box.style.display='block';box.value=tsv;box.select();
+ try{navigator.clipboard.writeText(tsv);setSheetMsg('雛形をコピーしました。空のスプレッドシートのA1をクリックして貼り付けてください。','o');}
+ catch(e){setSheetMsg('下の枠の中身を全選択してコピーし、スプレッドシートのA1に貼り付けてください。','');}}
+function shareLink(){
+ const v=$('sheetUrl').value.trim();
+ if(!v){setSheetMsg('先にスプレッドシートのURLを入力してください。','n');return;}
+ const link=location.origin+location.pathname+'?sheet='+encodeURIComponent(v);
+ const box=$('tmplBox');box.style.display='block';box.value=link;box.select();
+ try{navigator.clipboard.writeText(link);setSheetMsg('配布用リンクをコピーしました。このリンクをスタッフに送れば、各自の設定は不要です。','o');}
+ catch(e){setSheetMsg('下の枠のリンクをコピーしてスタッフに送ってください。','');}}
+/* 起動時：URLパラメータ → localStorage → rates.json の順 */
+(function(){
+ let u='';
+ try{const q=new URLSearchParams(location.search).get('sheet');
+  if(q){u=q;localStorage.setItem('vivi_sheet',q);}else u=localStorage.getItem('vivi_sheet')||'';}catch(e){}
+ SHEETSRC.url=u;
+ if(u){setTimeout(()=>loadSheet(true).then(updateSrcBar),0);return;}
+ try{if(typeof fetch==='function'){fetch('rates.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
+  if(j&&j.banks){M=j;migrate();try{localStorage.setItem('vivi_rates_v5',JSON.stringify(M))}catch(e){}onBank();}}).catch(()=>{});}}catch(e){}
+})();
 
 let BANK='hokugin',FIXK='f2',AFIX='same',DISCMODE='max',GOAL=70,PTYPE='mansion';
 
@@ -702,7 +830,11 @@ function importRates(el){const f=el.files[0];if(!f)return;const r=new FileReader
  r.onload=e=>{try{const j=JSON.parse(e.target.result);if(!j.banks)throw 0;M=j;migrate();
   localStorage.setItem('vivi_rates_v5',JSON.stringify(M));buildRateTable();onBank();alert('金利マスタを読み込みました。');}
   catch(err){alert('このファイルは読み込めませんでした。')}el.value=''};r.readAsText(f);}
-function openRates(){buildRateTable();openM('rates');}
+function openRates(){buildRateTable();
+ if($('sheetUrl'))$('sheetUrl').value=SHEETSRC.url||'';
+ if(SHEETSRC.ok)setSheetMsg(`連携中です（${SHEETSRC.at} 更新）。金利はスプレッドシートの値が優先されます。`,'o');
+ else if(SHEETSRC.err)setSheetMsg('読み込めませんでした：'+SHEETSRC.err,'n');
+ openM('rates');}
 
 /* ===== 入力生成 ===== */
 const UNIT={mansion:{a:45000,b:80000,c:115000,d:170000},kodate:{a:50000,b:85000,c:125000,d:190000}};
@@ -934,7 +1066,8 @@ function calc(){
  else bar.className='';
  const ok=R.ready;
  $('printWarn').className=(!ok||!M.date||stale)?'on':'';
- $('rtStamp').textContent=M.date?`金利 ${M.date} 時点`:'金利 未確認';
+ $('rtStamp').textContent=(M.date?`金利 ${M.date} 時点`:'金利 未確認')+(SHEETSRC.ok?'・シート連携':'');
+ updateSrcBar();
 
  /* hero */
  const fl=fixLabel(R.fk);
