@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ViVi不動産｜リノベ一体型 資金計画シミュレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#16294B;--navy-d:#0E1B33;--navy-l:#2A4373;
+  --gold:#C8A64B;--orange:#E8842B;--orange-d:#B85F14;
+  --ink:#1A1D23;--mid:#5A6478;--soft:#8B94A6;
+  --line:#DFE3EA;--line-s:#C6CCD8;
+  --bg:#F4F6F9;--card:#FFF;--tint:#EEF2F8;
+  --warn-bg:#FDF3E4;--warn-ln:#E8B96B;--warn-tx:#8A5A0A;
+  --ok-bg:#EAF4EE;--ok-ln:#8CC0A0;--ok-tx:#1F6B3F;
+  --ng-bg:#FBECEA;--ng-ln:#DFA098;--ng-tx:#9A3323;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Noto Sans JP",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.7;-webkit-text-size-adjust:100%}
+.num{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.hwrap{max-width:1360px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:9px}
+.brand b{font-size:19px;font-weight:700;letter-spacing:.02em}
+.brand b i{color:var(--gold);font-style:normal}
+.brand span{font-size:12px;color:#A9B6CE}
+.htitle{font-size:13px;color:#C6D2E6;border-left:1px solid #3B517A;padding-left:14px}
+.hact{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.hact button{font-family:inherit;font-size:12px;padding:6px 12px;border-radius:6px;border:1px solid #43598A;background:#1E355E;color:#D6E0F0;cursor:pointer;transition:.15s}
+.hact button:hover{background:#2A4373;border-color:#5B72A6}
+.hact button.pri{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:500}
+.hact button.pri:hover{background:var(--orange-d)}
+.hact button.gld{background:var(--gold);border-color:var(--gold);color:#2A2205;font-weight:500}
+
+/* 金利警告バー */
+#rateBar{background:#9A3323;color:#fff;font-size:12.5px;padding:8px 18px;text-align:center;display:none}
+#rateBar.on{display:block}
+#rateBar.stale{background:#8A5A0A}
+#rateBar b{font-weight:700}
+#rateBar button{margin-left:10px;font-family:inherit;font-size:11.5px;padding:3px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;cursor:pointer}
+
+main{max-width:1360px;margin:0 auto;padding:18px;display:grid;grid-template-columns:minmax(0,410px) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:1040px){main{grid-template-columns:1fr;padding:14px 12px 90px}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card+.card{margin-top:14px}
+.chd{background:var(--tint);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:9px}
+.chd h2{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:.03em}
+.chd .no{width:20px;height:20px;border-radius:5px;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;flex:none}
+.chd .rt{margin-left:auto;font-size:11px;color:var(--soft)}
+.cbd{padding:14px}
+
+.fld{margin-bottom:11px}.fld:last-child{margin-bottom:0}
+label{display:block;font-size:11.5px;color:var(--mid);font-weight:500;margin-bottom:4px}
+label .hint{color:var(--soft);font-weight:400}
+input[type=text],input[type=number],input[type=date],select{width:100%;font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line-s);border-radius:6px;background:#fff;color:var(--ink)}
+input[type=number]{font-family:"Roboto Mono",monospace;text-align:right;font-variant-numeric:tabular-nums}
+input:focus,select:focus{outline:2px solid var(--orange);outline-offset:-1px;border-color:var(--orange)}
+input.miss{background:#FBECEA;border-color:#DFA098}
+.unit{position:relative}
+.unit .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11.5px;color:var(--soft);pointer-events:none;background:#fff;padding-left:5px}
+.unit input{padding-right:44px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.seg{display:flex;border:1px solid var(--line-s);border-radius:6px;overflow:hidden}
+.seg button{flex:1;font-family:inherit;font-size:12.5px;padding:8px 3px;border:0;background:#fff;color:var(--mid);cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--navy);color:#fff;font-weight:500}
+.seg.sm button{font-size:11.5px;padding:7px 2px}
+.chk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mid);cursor:pointer;padding:3px 0}
+.chk input{width:15px;height:15px;accent-color:var(--orange);cursor:pointer;flex:none}
+.note{font-size:11px;color:var(--soft);line-height:1.6;margin-top:5px}
+.sub-blk{border:1px solid var(--line);border-radius:8px;padding:11px;margin-top:11px;background:#FAFBFD}
+.sub-blk .sbt{font-size:11.5px;font-weight:700;color:var(--navy);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+
+.hero{background:var(--navy);border-radius:10px;padding:18px;color:#fff}
+.hero .lbl{font-size:11.5px;color:#A9B6CE;letter-spacing:.06em;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hero .lbl .bk{background:var(--gold);color:#2A2205;padding:1px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0}
+.pays{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-top:12px}
+@media(max-width:520px){.pays{grid-template-columns:1fr;gap:8px}}
+.pay{background:#1E355E;border:1px solid #3B517A;border-radius:8px;padding:13px 14px}
+.pay.up{background:#4A2F16;border-color:var(--orange)}
+.pay .cap{font-size:11px;color:#B9C6DC;margin-bottom:2px}
+.pay.up .cap{color:#F0C79A}
+.pay .amt{font-size:29px;font-weight:700;line-height:1.15}
+.pay .amt small{font-size:14px;font-weight:400;color:#B9C6DC;margin-left:2px}
+.pay .sub{font-size:11px;color:#8FA0BE;margin-top:3px;line-height:1.55}
+.arrowc{text-align:center;color:var(--orange);font-size:12px;font-weight:700;line-height:1.3}
+.arrowc .big{font-size:22px;display:block}
+@media(max-width:520px){.arrowc .big{transform:rotate(90deg)}}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:14px}
+.kpi{background:#fff;padding:12px 13px}
+.kpi .k{font-size:11px;color:var(--mid);margin-bottom:2px}
+.kpi .v{font-size:19px;font-weight:700;color:var(--navy);line-height:1.25}
+.kpi .v small{font-size:12px;font-weight:400;color:var(--soft)}
+.kpi.acc .v{color:var(--orange-d)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 11px;border-bottom:1px solid var(--line);text-align:right}
+th{font-size:11.5px;color:var(--mid);font-weight:500;background:var(--tint);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tbody tr:last-child td{border-bottom:0}
+td.n{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;font-weight:500}
+tr.tot td{background:var(--tint);font-weight:700;color:var(--navy);border-top:2px solid var(--navy);border-bottom:0}
+tr.hl td{background:#FFF8EC}
+tr.best td{background:#EAF4EE}
+.scroll{overflow-x:auto}
+.pill{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:20px;font-weight:500;white-space:nowrap}
+.pill.rec{background:var(--orange);color:#fff}
+.pill.gd{background:var(--ok-bg);color:var(--ok-tx);border:1px solid var(--ok-ln)}
+.pill.wn{background:var(--warn-bg);color:var(--warn-tx);border:1px solid var(--warn-ln)}
+.pill.bd{background:var(--ng-bg);color:var(--ng-tx);border:1px solid var(--ng-ln)}
+.pill.bst{background:var(--ok-tx);color:#fff}
+
+.bars{padding:14px}
+.bar{margin-bottom:13px}.bar:last-child{margin-bottom:0}
+.bar .bl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:10px}
+.bar .bl b{font-family:"Roboto Mono",monospace;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{height:26px;background:var(--tint);border-radius:5px;overflow:hidden;display:flex}
+.seg1{background:var(--navy)}.seg2{background:var(--navy-l)}.seg3{background:var(--gold)}.seg4{background:#A8B4C8}.seg5{background:var(--orange)}.seg6{background:#B08CA8}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--mid);margin-top:8px}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:4px}
+
+.msg{padding:11px 13px;border-radius:8px;font-size:12.5px;line-height:1.65;margin:0 14px 14px}
+.msg.w{background:var(--warn-bg);border:1px solid var(--warn-ln);color:var(--warn-tx)}
+.msg.o{background:var(--ok-bg);border:1px solid var(--ok-ln);color:var(--ok-tx)}
+.msg.n{background:var(--ng-bg);border:1px solid var(--ng-ln);color:var(--ng-tx)}
+.msg b{font-weight:700}
+.msg.hd{margin-top:14px}
+.talk{background:#FFFBF3;border:1px dashed var(--warn-ln);border-radius:8px;padding:11px 13px;margin:0 14px 14px;font-size:12.5px;color:#6B5324;line-height:1.7}
+.talk .tt{font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--orange-d);margin-bottom:4px}
+
+input[type=range]{width:100%;accent-color:var(--orange);margin:4px 0}
+.rngv{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mid)}
+
+.mask{position:fixed;inset:0;background:rgba(14,27,51,.62);display:none;z-index:100;padding:16px;overflow:auto}
+.mask.on{display:block}
+.modal{max-width:1000px;margin:16px auto;background:#fff;border-radius:12px;overflow:hidden}
+.modal.nar{max-width:780px}
+.mhd{background:var(--navy);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mhd h3{font-size:15px;font-weight:700}
+.mhd .mact{margin-left:auto;display:flex;gap:7px}
+.mhd .mact button{font-family:inherit;font-size:11.5px;padding:5px 11px;border-radius:5px;border:1px solid #43598A;background:#1E355E;color:#D6E0F0;cursor:pointer}
+.mhd .mact button.pri{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:500}
+.mhd .x{background:none;border:0;color:#A9B6CE;font-size:22px;cursor:pointer;line-height:1;font-family:inherit}
+.mbd{padding:18px;font-size:13.5px;line-height:1.85;max-height:74vh;overflow:auto}
+.mbd h4{font-size:14px;color:var(--navy);margin:18px 0 6px;padding-left:9px;border-left:3px solid var(--orange)}
+.mbd h4:first-child{margin-top:0}
+.mbd ul{margin:0 0 0 20px}.mbd li{margin-bottom:3px}
+.mbd p{margin-bottom:8px}
+.mbd code{background:var(--tint);padding:1px 5px;border-radius:3px;font-size:12px}
+
+/* 金利マスタ表 */
+.rtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.rtbl th,.rtbl td{border:1px solid var(--line);padding:5px 6px;text-align:center}
+.rtbl th{background:var(--tint);font-size:11px;color:var(--mid);font-weight:500}
+.rtbl th.bk{background:var(--navy);color:#fff;font-size:12px;font-weight:700}
+.rtbl td.lb{text-align:left;background:#FAFBFD;font-size:11.5px;color:var(--mid);white-space:nowrap}
+.rtbl input{width:100%;min-width:62px;font-family:"Roboto Mono",monospace;font-size:12.5px;text-align:right;padding:5px 6px;border:1px solid var(--line-s);border-radius:4px;font-variant-numeric:tabular-nums}
+.rtbl input.miss{background:#FBECEA;border-color:#DFA098}
+.rtbl select{font-size:12px;padding:4px 5px;width:100%}
+
+.mbar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);color:#fff;padding:9px 14px;z-index:60;align-items:center;gap:12px;box-shadow:0 -2px 10px rgba(0,0,0,.2)}
+.mbar .m1{font-size:10.5px;color:#A9B6CE}
+.mbar .m2{font-size:20px;font-weight:700;font-family:"Roboto Mono",monospace}
+@media(max-width:1040px){.mbar{display:flex}}
+footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;color:var(--soft);line-height:1.8}
+#mascot{height:34px;display:none}
+#cmpCard{display:none}
+.chd .no{flex:none}
+#cmpCard.on{display:block}
+
+@media print{
+  header,.hact,.mbar,.noprint,footer,#rateBar{display:none!important}
+  body{background:#fff;font-size:10.5px}
+  main{display:block;max-width:100%;padding:0}
+  .card,.hero{break-inside:avoid;page-break-inside:avoid;border:1px solid #999}
+  .hero{background:#16294B!important}
+  .hero,.pay,.pay.up,.seg1,.seg2,.seg3,.seg4,.seg5,.seg6,th,tr.tot td,tr.best td,.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printhd{display:block!important}
+  #printWarn.on{display:block!important}
+}
+#printhd{display:none;border-bottom:2px solid #16294B;padding-bottom:8px;margin-bottom:12px}
+#printhd b{font-size:15px;color:#16294B}
+#printWarn{display:none;border:2px solid #9A3323;color:#9A3323;padding:6px 10px;margin-bottom:10px;font-size:11px;font-weight:700}
+</style></head>
+<body>
+
+<header class="noprint">
+ <div class="hwrap">
+  <div class="brand"><img id="mascot" src="vivit.png" alt="" onload="this.style.display='block'" onerror="this.remove()"><b>Vi<i>V</i>i不動産</b><span>株式会社</span></div>
+  <div class="htitle">リノベ一体型 資金計画シミュレーター</div>
+  <div class="hact">
+   <button onclick="openM('man')">使い方</button>
+   <button class="gld" onclick="openRates()">金利マスタ</button>
+   <button onclick="doCompare()">各行を比較</button>
+   <button onclick="doSave()">保存</button>
+   <button onclick="fi.click()">読込</button>
+   <button onclick="doReset()">リセット</button>
+   <button class="pri" onclick="window.print()">印刷 / PDF</button>
+  </div>
+ </div>
+ <div id="rateBar"></div>
+</header>
+<input type="file" id="fi" accept=".json" style="display:none" onchange="doLoad(this)">
+
+<main>
+<div class="noprint">
+
+ <div class="card">
+  <div class="chd"><span class="no">1</span><h2>お客様の状況</h2></div>
+  <div class="cbd">
+   <div class="fld"><label>お客様名 <span class="hint">（帳票用・任意）</span></label><input type="text" id="cname" placeholder="山田 太郎 様"></div>
+   <div class="row2">
+    <div class="fld"><label>ご年齢</label><div class="unit"><input type="number" id="age" value="35"><span class="u">歳</span></div></div>
+    <div class="fld"><label>世帯年収 <span class="hint">（税込）</span></label><div class="unit"><input type="number" id="income" value="520"><span class="u">万円</span></div></div>
+   </div>
+   <div class="row2">
+    <div class="fld"><label>ご職業</label>
+     <select id="job" onchange="calc()"><option value="kyuyo" selected>給与所得者</option><option value="yakuin">会社役員</option><option value="jiei">自営業</option></select></div>
+    <div class="fld"><label>勤続年数</label><div class="unit"><input type="number" id="tenure" value="8"><span class="u">年</span></div></div>
+   </div>
+   <div class="fld"><label>完済目標年齢</label>
+    <div class="seg" id="segGoal"><button data-v="65">65歳</button><button data-v="70" class="on">70歳</button><button data-v="75">75歳</button><button data-v="80">80歳</button></div>
+    <div class="note" id="goalNote"></div>
+    <div class="fld" id="altFld" style="display:none;margin-top:8px"><label class="chk"><input type="checkbox" id="altOn" onchange="calc()"><span id="altLbl"></span></label>
+     <div class="note">一定の要件を満たす方のみ。適用可否は必ずローンセンターにご確認ください。</div></div>
+   </div>
+   <div class="row3">
+    <div class="fld"><label>現在の家賃</label><div class="unit"><input type="number" id="rent" value="76000"><span class="u">円</span></div></div>
+    <div class="fld"><label>管理費等</label><div class="unit"><input type="number" id="rentkanri" value="4000"><span class="u">円</span></div></div>
+    <div class="fld"><label>駐車場</label><div class="unit"><input type="number" id="rentpark" value="6000"><span class="u">円</span></div></div>
+   </div>
+   <div class="row2">
+    <div class="fld"><label>他社ローンの返済 <span class="hint">車・カード等 月額</span></label><div class="unit"><input type="number" id="otherLoan" value="0"><span class="u">円</span></div></div>
+    <div class="fld"><label>その残債</label><div class="unit"><input type="number" id="otherBal" value="0"><span class="u">万円</span></div></div>
+   </div>
+   <div class="row2" style="margin-top:11px">
+    <div class="fld"><label>自己資金</label><div class="unit"><input type="number" id="own" value="200"><span class="u">万円</span></div></div>
+    <div class="fld"><label>ご親族からの援助</label><div class="unit"><input type="number" id="gift" value="0"><span class="u">万円</span></div></div>
+   </div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">2</span><h2>物件情報</h2></div>
+  <div class="cbd">
+   <div class="fld"><label>種別</label><div class="seg" id="segType"><button data-v="mansion" class="on">中古マンション</button><button data-v="kodate">中古戸建</button></div></div>
+   <div class="row2">
+    <div class="fld"><label>物件価格</label><div class="unit"><input type="number" id="price" value="1080"><span class="u">万円</span></div></div>
+    <div class="fld"><label>面積</label><div class="unit"><input type="number" id="area" value="68"><span class="u">㎡</span></div></div>
+   </div>
+   <div class="row2">
+    <div class="fld"><label>築年数</label><div class="unit"><input type="number" id="built" value="32"><span class="u">年</span></div></div>
+    <div class="fld"><label>固定資産税等 <span class="hint">年額</span></label><div class="unit"><input type="number" id="tax" value="60000"><span class="u">円</span></div></div>
+   </div>
+   <div id="builtWarn"></div>
+   <div class="row2" id="mansionOnly">
+    <div class="fld"><label>管理費 <span class="hint">月額</span></label><div class="unit"><input type="number" id="kanri" value="8000"><span class="u">円</span></div></div>
+    <div class="fld"><label>修繕積立金 <span class="hint">月額</span></label><div class="unit"><input type="number" id="shuzen" value="11000"><span class="u">円</span></div></div>
+   </div>
+   <div class="fld" id="kodateOnly" style="display:none"><label>将来修繕への自主積立 <span class="hint">月額</span></label><div class="unit"><input type="number" id="jishu" value="12000"><span class="u">円</span></div></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">3</span><h2>リノベーション</h2></div>
+  <div class="cbd">
+   <div class="fld"><label>工事グレード</label>
+    <select id="grade" onchange="onGrade()">
+     <option value="a">A｜水回り4点交換のみ</option><option value="b">B｜水回り＋内装（クロス・床）</option>
+     <option value="c" selected>C｜部分リノベ（間取り変更なし・フル内装＋水回り）</option>
+     <option value="d">D｜フルリノベ（スケルトン・間取り変更あり）</option><option value="x">X｜見積ツールの金額を直接入力</option>
+    </select></div>
+   <div class="fld"><label>工事費（税込）</label><div class="unit"><input type="number" id="reno" value="780"><span class="u">万円</span></div>
+    <div class="note" id="renoNote"></div></div>
+   <div class="fld"><label class="chk"><input type="checkbox" id="incFurniture" checked>家具・家電・カーテン費用を諸費用に含める</label></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">4</span><h2>住宅ローン</h2><span class="rt" id="rtStamp"></span></div>
+  <div class="cbd">
+   <div class="fld"><label>お借入先・商品</label>
+    <div class="seg sm" id="segBank">
+     <button data-v="hokugin" class="on">北陸銀行</button><button data-v="rokin">ろうきん500</button><button data-v="rokina">500α</button><button data-v="ichigin">富山第一</button><button data-v="other">その他</button>
+    </div>
+    <div class="note" id="bankMemo"></div>
+   </div>
+   <div class="fld"><label>金利タイプ <span class="hint">固定金利特約の期間</span></label><select id="fixSel" onchange="onFix()"></select>
+    <div class="note" id="fixNote"></div></div>
+
+   <div class="sub-blk" style="background:#F7F9FC">
+    <div class="sbt">当初の金利</div>
+    <div class="fld"><label>当初適用金利 <span class="hint">チラシの新規お借入時金利</span></label><div class="unit"><input type="number" id="r1" step="0.001" placeholder="未入力"><span class="u">%</span></div></div>
+   </div>
+
+   <div class="sub-blk" id="afterBlk" style="background:#FFF9F2">
+    <div class="sbt">特約期間終了後の金利</div>
+    <div class="fld"><label>店頭基準金利 <span class="hint">終了後に選ぶタイプの店頭金利</span></label><div class="unit"><input type="number" id="baseR" step="0.001" placeholder="未入力"><span class="u">%</span></div></div>
+    <div class="fld"><label>終了後に選ぶ金利タイプ</label><select id="afterFix" onchange="onAfterFix()"></select></div>
+    <div class="fld"><label>引下げ幅（優遇）</label>
+     <div class="seg sm" id="segDisc"><button data-v="max" class="on">最大優遇</button><button data-v="min">最低優遇</button></div>
+     <div class="unit" style="margin-top:6px"><input type="number" id="disc" step="0.01" placeholder="未設定"><span class="u">%</span></div>
+    </div>
+    <div class="fld"><label>店頭金利の想定上昇</label>
+     <input type="range" id="up" min="0" max="2" step="0.1" value="0" oninput="calc()">
+     <div class="rngv"><span>±0%</span><span><b class="num" id="upv">+0.0%</b></span><span>+2.0%</span></div></div>
+    <div id="calcLine" class="note" style="font-size:12.5px;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:8px"></div>
+   </div>
+
+   <div class="fld" id="rokinKaiin" style="display:none;margin-top:11px"><label>ろうきんの会員区分・引下げ項目</label>
+    <div class="note">引下げ幅は取引項目の該当数で決まります。上の「引下げ幅」に実際の該当数に応じた値を入れてください。<b>宅建業者からのご紹介も引下げ項目に該当します。</b></div></div>
+
+   <div class="fld" style="margin-top:11px"><label>団体信用生命保険・特約</label>
+    <select id="tokuyaku" onchange="calc()"></select>
+    <div class="note" id="tkNote"></div></div>
+   <div class="fld" id="pairFld" style="display:none"><label class="chk"><input type="checkbox" id="pairOn" onchange="calc()">夫婦連生（ペア）保障付でお借入れ</label></div>
+   <div id="tkWarn"></div>
+
+   <div class="sub-blk" id="uwBlk" style="display:none">
+    <div class="sbt"><span>生活資金の上乗せ（最高500万円）</span></div>
+    <div class="fld"><label class="chk"><input type="checkbox" id="uwOn" onchange="calc()">上乗せする</label></div>
+    <div class="fld"><label>使いみち <span class="hint">複数選択可</span></label>
+     <div style="display:flex;flex-wrap:wrap;gap:2px 16px">
+      <label class="chk"><input type="checkbox" id="uwKagu" onchange="calc()">家財購入・引越費用</label>
+      <label class="chk"><input type="checkbox" id="uwCar" onchange="calc()">自動車</label>
+      <label class="chk"><input type="checkbox" id="uwEdu" onchange="calc()">教育・結婚</label>
+      <label class="chk"><input type="checkbox" id="uwMatome" onchange="calc()">無担保ローンの借換</label>
+     </div></div>
+    <div class="row2">
+     <div class="fld"><label>上乗せ額</label><div class="unit"><input type="number" id="uwAmt" value="300"><span class="u">万円</span></div></div>
+     <div class="fld"><label>生活資金口座の金利 <span class="hint">変動</span></label><div class="unit"><input type="number" id="uwRate" step="0.001" placeholder="未入力"><span class="u">%</span></div></div>
+    </div>
+    <div class="note" id="uwTerm"></div>
+    <div id="uwWarn"></div>
+   </div>
+
+   <div class="fld" style="margin-top:11px"><label class="chk"><input type="checkbox" id="incFee" checked onchange="calc()">諸費用もローンに含めて借入する</label></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">5</span><h2>諸費用の調整</h2></div>
+  <div class="cbd">
+   <div class="note" style="margin-bottom:10px">お借入先の条件に応じた自動計算値が入ります。実額が分かった項目は上書きしてください。空欄に戻すと自動計算に戻ります。</div>
+   <div id="feeInputs"></div>
+   <div class="fld" style="margin-top:11px"><label>予備費の率</label><div class="unit"><input type="number" id="yobiRate" value="3" step="0.5"><span class="u">%</span></div></div>
+  </div>
+ </div>
+</div>
+
+<div>
+ <div id="printhd"><b>ViVi不動産株式会社｜資金計画のご提案</b> <span id="phMeta" style="font-size:11px;color:#555"></span></div>
+ <div id="printWarn">※ 金利が未入力または確認から時間が経過しています。この帳票の金利は最新ではない可能性があります。</div>
+
+ <div class="hero">
+  <div class="lbl">毎月のお支払い <span class="bk" id="heroBank">—</span> <span id="heroFix"></span></div>
+  <div class="pays">
+   <div class="pay"><div class="cap" id="cap1">当初</div><div class="amt num"><span id="pay1">—</span><small>円</small></div><div class="sub num" id="sub1"></div></div>
+   <div class="arrowc"><span class="big">→</span><span id="diffTop"></span></div>
+   <div class="pay up"><div class="cap" id="cap2">終了後</div><div class="amt num"><span id="pay2">—</span><small>円</small></div><div class="sub num" id="sub2"></div></div>
+  </div>
+ </div>
+
+ <div class="kpis">
+  <div class="kpi"><div class="k">総額（物件＋工事＋諸費用）</div><div class="v num" id="kTotal">—<small>万</small></div></div>
+  <div class="kpi"><div class="k">ご自己資金</div><div class="v num" id="kOwn">—<small>万</small></div></div>
+  <div class="kpi acc"><div class="k">お借入額</div><div class="v num" id="kLoan">—<small>万</small></div></div>
+  <div class="kpi"><div class="k">借入期間</div><div class="v num" id="kYear">—<small>年</small></div></div>
+ </div>
+
+ <div class="card" id="ruleCard">
+  <div class="chd"><span class="no">!</span><h2>商品ルールの確認</h2><span class="rt" id="ruleCount"></span></div>
+  <div id="ruleBody" style="padding:14px"></div>
+ </div>
+
+ <div class="card" id="cmpCard">
+  <div class="chd"><span class="no">G</span><h2>各行・各商品の比較</h2><span class="rt noprint"><button onclick="$('cmpCard').classList.remove('on')" style="font-family:inherit;font-size:11px;padding:3px 9px;border:1px solid var(--line-s);border-radius:5px;background:#fff;cursor:pointer">閉じる</button></span></div>
+  <div class="scroll"><table><thead id="cmpHead"></thead><tbody id="cmpBody"></tbody></table></div>
+  <div class="msg" id="cmpMsg"></div>
+  <div class="talk"><div class="tt">お客様への説明</div><div id="cmpTalk"></div></div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">A</span><h2>いまの支出との比較</h2></div>
+  <div class="bars">
+   <div class="bar"><div class="bl"><span>いまの支出（家賃・管理費・駐車場<span id="olLbl"></span>）</span><b class="num" id="bRent">—</b></div>
+    <div class="track"><div class="seg1" id="bR1"></div><div class="seg4" id="bR2"></div><div class="seg6" id="bR3"></div></div></div>
+   <div class="bar"><div class="bl"><span>ご購入後・当初<span id="fyLbl"></span>の実質月額</span><b class="num" id="bBuy1">—</b></div>
+    <div class="track"><div class="seg1" id="bB1"></div><div class="seg5" id="bB1m"></div><div class="seg2" id="bB2"></div><div class="seg3" id="bB3"></div><div class="seg6" id="bB4"></div></div></div>
+   <div class="bar"><div class="bl"><span>ご購入後・特約終了後の実質月額</span><b class="num" id="bBuy2">—</b></div>
+    <div class="track"><div class="seg1" id="bC1"></div><div class="seg5" id="bC1m"></div><div class="seg2" id="bC2"></div><div class="seg3" id="bC3"></div><div class="seg6" id="bC4"></div></div></div>
+   <div class="legend"><span><i style="background:var(--navy)"></i>住宅ローン</span><span><i style="background:var(--orange)"></i>生活資金</span><span><i style="background:var(--navy-l)"></i>管理費・修繕積立</span><span><i style="background:var(--gold)"></i>固定資産税・火災保険</span><span><i style="background:#A8B4C8"></i>管理費・駐車場</span><span><i style="background:#B08CA8"></i>他社ローン</span></div>
+  </div>
+  <div class="msg" id="rentMsg"></div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">B</span><h2>特約期間が終わったあとの支払い</h2></div>
+  <div class="scroll"><table><thead><tr><th>前提</th><th>店頭基準</th><th>引下げ幅</th><th>適用金利</th><th>月々返済額</th><th>当初との差</th></tr></thead><tbody id="scnBody"></tbody></table></div>
+  <div class="msg" id="scnMsg"></div>
+  <div class="talk"><div class="tt">お客様への説明</div><div id="scnTalk"></div></div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">C</span><h2>完済年齢別の組み方</h2></div>
+  <div class="scroll"><table><thead><tr><th>完済年齢</th><th>借入期間</th><th>当初月額</th><th>終了後月額</th><th>総返済額</th><th></th></tr></thead><tbody id="ageBody"></tbody></table></div>
+  <div class="msg" id="ageMsg"></div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">D</span><h2>いまの支出と同じなら、いくらのリノベができるか</h2></div>
+  <div class="cbd noprint" style="padding-bottom:4px">
+   <label>いまの支出に対して、月々いくらまでなら増えても良いか</label>
+   <input type="range" id="allow" min="-10000" max="40000" step="1000" value="0" oninput="calc()">
+   <div class="rngv"><span>−1万円</span><span><b class="num" id="allowv">±0円</b></span><span>＋4万円</span></div></div>
+  <table><tbody id="revBody"></tbody></table>
+  <div class="msg" id="revMsg"></div>
+  <div class="talk"><div class="tt">お客様への説明</div><div id="revTalk"></div></div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">E</span><h2>諸費用の明細</h2></div>
+  <div class="scroll"><table><thead><tr><th>項目</th><th>金額</th><th style="width:42%">算出根拠</th></tr></thead><tbody id="feeBody"></tbody></table></div>
+ </div>
+
+ <div class="card">
+  <div class="chd"><span class="no">F</span><h2>ご融資の目安チェック</h2></div>
+  <table><tbody id="chkBody"></tbody></table>
+  <div class="msg" id="chkMsg"></div>
+ </div>
+</div>
+</main>
+
+<div class="mbar noprint"><div><div class="m1">当初 / 終了後の月額（総額）</div><div class="m2"><span id="mb1">—</span> → <span id="mb2" style="color:#F4B678">—</span></div></div></div>
+
+<footer>
+ 本シミュレーションは概算であり、実際の融資条件・諸費用・税額をお約束するものではありません。金利・引下げ幅・手数料・特約の上乗せ率・借入可能期間・年齢条件は、各金融機関の商品改定および審査結果により変動します。<br>
+ 引下げ幅は取引項目の該当状況により変わり、返済の遅延等があった場合には適用されないことがあります。各条件は必ず最新の商品概要説明書でご確認ください。<br>
+ ViVi不動産株式会社
+</footer>
+
+<div class="mask" id="rates" onclick="if(event.target===this)closeM('rates')">
+ <div class="modal">
+  <div class="mhd"><h3>金利マスタ設定</h3>
+   <div class="mact"><button onclick="exportRates()">JSON書き出し</button><button onclick="rfi.click()">JSON読込</button><button class="pri" onclick="saveRates()">保存して閉じる</button></div>
+   <button class="x" onclick="closeM('rates')">×</button></div>
+  <div class="mbd">
+   <div class="msg w" style="margin:0 0 14px"><b>金利欄は毎月更新してください。</b>引下げ幅（優遇幅）は商品概要書の値を初期設定してあります。金利は毎月変わるため空欄です。各行のチラシから当初適用金利と店頭基準金利を入力してください。</div>
+   <div class="fld" style="max-width:320px;margin-bottom:16px"><label>金利の最終確認日</label><input type="date" id="rtDate">
+    <div class="note">この日から45日を過ぎると画面上部に警告が出ます。</div></div>
+   <div class="scroll"><table class="rtbl" id="rtTable"></table></div>
+   <div style="margin-top:16px"><h4 style="font-size:13px;color:var(--navy);margin-bottom:6px">確認先</h4>
+    <div style="font-size:12.5px;line-height:2">
+     北陸銀行 <a href="https://www.hokugin.co.jp/" target="_blank" rel="noopener">hokugin.co.jp</a>　／　
+     北陸労働金庫 <a href="https://hokuriku.rokin.or.jp/" target="_blank" rel="noopener">hokuriku.rokin.or.jp</a>　／　
+     富山第一銀行 <a href="https://www.first-bank.co.jp/" target="_blank" rel="noopener">first-bank.co.jp</a></div></div>
+  </div>
+ </div>
+</div>
+<input type="file" id="rfi" accept=".json" style="display:none" onchange="importRates(this)">
+
+<div class="mask" id="man" onclick="if(event.target===this)closeM('man')">
+ <div class="modal nar">
+  <div class="mhd"><h3>使い方（社内マニュアル）</h3><button class="x" onclick="closeM('man')">×</button></div>
+  <div class="mbd">
+   <h4>このツールの金利の考え方</h4>
+   <p>各行の商品概要書を読み込んで作ってあります。金利は次の式で計算します。</p>
+   <p style="background:var(--tint);padding:10px 12px;border-radius:6px"><b>特約期間終了後の金利 ＝ 店頭基準金利 ＋ 想定上昇 − 引下げ幅</b></p>
+   <p>この式は各行のチラシの数字で検算済みです。たとえば富山第一銀行の2年固定は、店頭表示2.40％ − 最大引下げ1.30％ ＝ 1.10％となり、チラシの「最大引下げ後金利 年1.10％」と一致します。まるっと500の3年固定も、通常2.40％ − 1.35％ ＝ 1.05％で、チラシの新規適用金利の下限と一致します。</p>
+   <p><b>引下げ幅（優遇幅）は商品概要書の値をあらかじめ入れてあります。</b>ここはあまり変わりません。毎月入れ替えるのは金利だけです。</p>
+
+   <h4>毎月やること（5分）</h4>
+   <ol style="margin-left:20px">
+    <li>各行のチラシを見る</li>
+    <li>「金利マスタ」を開き、<b>当初適用金利</b>と<b>店頭基準金利</b>を入れる</li>
+    <li>最終確認日を入れて保存</li>
+    <li>「JSON書き出し」でファイルを保存し、GitHubに <code>rates.json</code> として置く（全スタッフに自動反映）</li>
+   </ol>
+   <p>45日を過ぎると警告が出ます。金利が空欄のままだと金額は「—」のままで、印刷物にも警告が入ります。</p>
+
+   <h4>最大優遇と最低優遇の切り替え</h4>
+   <p>引下げ幅は<b>取引項目の該当数で変わります</b>。全項目に該当すれば最大、そうでなければ小さくなります。画面で「最大優遇／最低優遇」を切り替えると、両方の場合の月々が確認できます。</p>
+   <p>Bの表には両方が並びます。<b>最大優遇で説明しておいて、実際は該当項目が足りず金利が高くなった、というのが一番多いトラブルです。</b>必ず両方の金額をお見せして、「取引条件を満たさない場合はこちらになります」とお伝えしてください。</p>
+   <p>商品概要書から読み取った各行の引下げ幅は次のとおりです。</p>
+   <ul>
+    <li><b>北陸銀行</b>／特約終了後は店頭基準から年1.3％〜1.7％引下げ。基本1.3％に加え、Web口座・カードローン・クレジットカード・NISA口座など1項目0.10％で最大0.4％上乗せ。<b>返済の遅延が直近1年以内にあると適用されない場合があります。</b></li>
+    <li><b>富山第一銀行</b>／最大1.30％。給与振込0.50％が最も大きく、口座振替3種類・公共料金カード払い・NISA・カードローン等が各0.30％、家族の給与振込・こども夢定期・省エネ住宅等が各0.20％。</li>
+    <li><b>まるっと500</b>／最大1.35％（取引項目0.60％＋2026年度特別引下げ0.75％）。特約期間終了後も当初の引下げ幅がそのまま続きます。</li>
+    <li><b>まるっと500α</b>／当初は最大1.65％（2年固定）／1.55％（3・5・10年固定）ですが、<b>特約期間終了後は取引項目分の1.25％のみ</b>になります。つまり店頭金利が動かなくても0.30〜0.40％上がります。</li>
+   </ul>
+
+   <h4>各行の注意点（画面の「商品ルールの確認」に自動表示されます）</h4>
+   <p><b>北陸銀行</b></p>
+   <ul>
+    <li><b>取扱手数料 220,000円</b>が必要です。諸費用に自動計上しています。忘れやすいので必ずご説明ください。</li>
+    <li>保証料は0円ですが、これは<b>お借入金利に含まれている</b>ためです。「保証料がタダ」ではありません。</li>
+    <li><b>新規で選べるのは2年固定と5年固定だけ</b>です。3年・10年・変動は特約期間終了後の見直し時に選べます。</li>
+    <li>融資時年齢 満18歳以上71歳未満、完済時 満80歳未満、期間2年以上40年以内。</li>
+    <li>8大疾病保障団信の上乗せ0％は<b>満50歳以下</b>。満51歳以上は年0.3％。全疾病保障団信は50歳以下0.1％／51歳以上0.4％。地銀協ライフサポート団信は<b>満51歳以上は取扱なし</b>。</li>
+    <li>富山県内にお住まいの方が対象です。融資額は銀行評価額の最大150％まで。</li>
+   </ul>
+   <p><b>富山第一銀行</b></p>
+   <ul>
+    <li><b>保証料不要の「プライム住宅ローン」は給与所得者限定で、会社役員は対象外</b>です。自営業・役員のお客様には保証付タイプになり、保証料と保証会社手数料が別途かかります。ここは間違えやすいので、ご職業を必ず先に確認してください。</li>
+    <li>銀行手数料は<b>220,000円または330,000円</b>（審査結果により異なる）。保証付の場合はさらに保証会社手数料33,000〜55,000円と保証料一括前払いが必要です。</li>
+    <li>プライムの完済時年齢は<b>満82歳未満</b>。保証会社によって条件が変わります（かんそうしんは満85歳未満、全国保証は満80歳未満かつ年収400万円以上）。</li>
+    <li>11疾病保障付団信の上乗せ0％は<b>実行時 満51歳未満</b>に限られます。3大疾病は＋0.20％、ワイド団信は＋0.30％。</li>
+    <li>新規優遇のプラン①は2年・5年固定のみ。期間は2年〜50年。</li>
+   </ul>
+   <p><b>北陸ろうきん（まるっと500・500α）</b></p>
+   <ul>
+    <li>完済時年齢が<b>満81歳未満</b>で、他行と1歳違います。年収150万円以上・原則勤続1年以上も条件です。</li>
+    <li>担保不動産取扱手数料は<b>住宅資金のみ198,000円／生活資金も同時に申し込むと220,000円</b>。生活資金を使うと22,000円上がります。</li>
+    <li>保証料は<b>0円（ろうきん負担）</b>。これは本当に0円で、金利にも含まれていません。他行に対する明確な強みです。</li>
+    <li>期間は原則40年、一定の要件を満たせば50年、全期間固定型は35年まで。</li>
+    <li>生活資金は最高500万円で、<b>返済期間は住宅資金と同じ</b>になります。家財購入・引越費用、自動車、教育・結婚、無担保ローンの借換に使えます。</li>
+    <li><b>「宅建業者・指定宅建業者から紹介の方」が金利引下げ項目に入っています。</b>当社からのご紹介が引下げ対象になる可能性があります。ローンセンターにご確認ください。</li>
+    <li>団信は、夫婦連生で＋0.10％、オールマイティ保障型（3大疾病・障がい特約付）で＋0.20％、引受緩和団信で＋0.40％。</li>
+   </ul>
+
+   <h4>接客での使う順番</h4>
+   <ul>
+    <li>①家賃を聞く　②他社ローンの有無を聞く　③ご職業を聞く（富山第一の商品選択に効きます）</li>
+    <li>④年齢と完済目標を決める　⑤物件とリノベを入れてAを見せる</li>
+    <li>⑥<b>Bで特約終了後の金額を必ず見せる。最大優遇と最低優遇の両方を見せる。</b></li>
+    <li>⑦「各行を比較」でどの商品が有利かを見せる　⑧Dで着地させる</li>
+   </ul>
+
+   <h4>中古物件ならではの注意</h4>
+   <p>3行とも「物件やその他条件によって、ご融資期間が異なる場合があります」と明記されています。<b>最長40年・50年という数字がそのまま使えるとは限りません。</b>築年数が一定を超えると自動で注意喚起が出ます。事前審査で実際に何年組めるかを必ず確認してください。</p>
+   <p><b>北陸銀行の商品概要には、築年数の扱いについて具体的な記載があります。</b>他行からの借換の場合、融資期間は「40年 − 築後（購入・増改築）経過年数」または他行での残返済期間のどちらか長い期間、とされています。築32年の物件なら40−32で8年という計算になります。</p>
+   <p>これはあくまで<b>借換のルールであって、購入時にそのまま適用されるものではありません。</b>ただし、この銀行が築年数をどう見ているかがはっきり分かる数字です。築年数の大きい物件では期間が短くなる可能性を念頭に置き、必ず事前審査で確認してください。画面にも参考値として表示されます。</p>
+   <p>建築年が1981年以前と推定される物件では赤い警告が出ます。旧耐震の可能性に加え、住宅ローン控除は1982年1月1日以降の建築が要件です。</p>
+
+   <h4>夫婦連生（ペア）保障付をご案内するとき</h4>
+   <p>北陸銀行・ろうきんには夫婦連生保障付の商品があります。ご利用の場合は<b>別途金利の上乗せ</b>があります（率は金融機関にご確認ください）。</p>
+   <p>あわせて<b>税務上の注意</b>があります。団信の保険金でローンが完済された場合、相手方の住宅ローンが免除される部分が<b>一時所得とみなされ、所得税の課税対象となる場合があります</b>。北陸銀行のチラシに明記されている内容です。画面の「夫婦連生（ペア）保障付でお借入れ」にチェックを入れると警告が出ます。お客様には税務署へのご確認をご案内してください。</p>
+
+   <h4>借換のご相談を受けたとき</h4>
+   <p>このツールは購入前提で作っていますが、北陸銀行は借換にも対応しており、条件が購入時と異なります。</p>
+   <ul>
+    <li>融資額は<b>銀行評価額の最大200％</b>まで（新築・購入は150％）</li>
+    <li>融資期間は「40年 − 築後経過年数」または他行の残返済期間の長い方</li>
+    <li>借換に伴う諸費用も対象になります</li>
+   </ul>
+   <p>本格的な借換の試算が必要になったら、別途ツールに組み込みますのでお知らせください。</p>
+
+   <h4>やってはいけないこと</h4>
+   <ul>
+    <li>赤い警告が出ている状態で金額をお客様に提示しない。</li>
+    <li>最大優遇の金利だけを見せて契約を進めない。</li>
+    <li>特約終了後の金額（B）を見せずに進めない。特に500αは必須。</li>
+    <li>団信の上乗せ率・年齢条件を、このツールの値のまま断定して伝えない。<b>必ず金融機関に確認。</b></li>
+   </ul>
+  </div>
+ </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const yen=n=>Math.round(n).toLocaleString('ja-JP');
+const man=n=>Math.round(n/10000).toLocaleString('ja-JP');
+const numv=id=>{const e=$(id);if(!e)return 0;const v=parseFloat(e.value);return isNaN(v)?0:v;};
+const has=id=>{const e=$(id);return e&&e.value!==''&&!isNaN(parseFloat(e.value));};
+const chk=id=>{const e=$(id);return !!(e&&e.checked);};
+const pmt=(P,ar,n)=>{if(P<=0||n<=0)return 0;const r=ar/100/12;if(r===0)return P/n;return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);};
+const bal=(P,ar,n,k)=>{if(P<=0||n<=0||k>=n)return 0;const r=ar/100/12;if(r===0)return P*(1-k/n);return P*(Math.pow(1+r,n)-Math.pow(1+r,k))/(Math.pow(1+r,n)-1);};
+const loanFrom=(X,ar,n)=>{if(X<=0||n<=0)return 0;const r=ar/100/12;if(r===0)return X*n;return X*(Math.pow(1+r,n)-1)/(r*Math.pow(1+r,n));};
+
+const FIXDEF=[['f0','変動',0],['f2','2年固定',2],['f3','3年固定',3],['f5','5年固定',5],['f10','10年固定',10],['f15','15年固定',15],['f20','20年固定',20],['fAll','全期間固定',-1]];
+const fixYears=k=>(FIXDEF.find(x=>x[0]===k)||[,,0])[2];
+const fixLabel=k=>(FIXDEF.find(x=>x[0]===k)||[,'—'])[1];
+const emptyR=()=>({f0:null,f2:null,f3:null,f5:null,f10:null,f15:null,f20:null,fAll:null});
+
+/* ===== マスタ：金利は空欄／引下げ幅は商品概要書の値 ===== */
+const BASE={date:'',banks:{
+ hokugin:{name:'北陸銀行',short:'北銀',
+  rates:emptyR(),base:emptyR(),
+  discMax:1.70,discMin:1.30,
+  maxYear:40,maxYearFixAll:40,maxAge:80,applyMin:18,applyMax:71,minYear:2,maxYearAlt:null,maxYearChuko:null,
+  newFix:['f2','f5'],availFix:['f0','f2','f3','f5','f10'],
+  jimuType:'fixed',jimuFixed:220000,jimuRate:0,jimuAlt:null,
+  hosho:'inrate',hoshoRate:0,ltvMax:150,ltvKarikae:200,karikaeYearRule:40,pairNote:true,
+  tk:[{n:'地銀協一般団信',u:0,o:0,th:99},{n:'8大疾病保障団信',u:0,o:0.30,th:51},
+      {n:'全疾病保障団信',u:0.10,o:0.40,th:51},{n:'地銀協ライフサポート団信',u:0.05,o:null,th:51}],
+  uw:false,minIncome:0,
+  memo:'富山県内にお住まいの方が対象。取扱手数料220,000円。保証料は借入金利に含まれます。新規は2年・5年固定のみ選択可。最長40年・完済時満80歳未満。'},
+ rokin:{name:'まるっと500（北陸ろうきん）',short:'ろうきん500',plan:'全期間引下げ型',
+  rates:emptyR(),base:emptyR(),
+  discMax:1.35,discMin:0.75,
+  maxYear:40,maxYearFixAll:35,maxAge:81,applyMin:18,applyMax:99,minYear:2,maxYearAlt:50,maxYearChuko:null,
+  newFix:['f0','f3','f5','f10','f15','f20','fAll'],availFix:['f0','f3','f5','f10','f15','f20','fAll'],
+  jimuType:'fixed',jimuFixed:198000,jimuRate:0,jimuAlt:220000,
+  hosho:'none',hoshoRate:0,ltvMax:0,
+  tk:[{n:'ろうきん団信',u:0,o:0,th:99},{n:'夫婦連生団信',u:0.10,o:0.10,th:99},
+      {n:'オールマイティ保障型（3大疾病・障がい特約）',u:0.20,o:0.20,th:99},{n:'引受緩和団信',u:0.40,o:0.40,th:99}],
+  uw:true,uwMax:500,minIncome:150,minTenure:1,pairNote:true,
+  memo:'全期間引下げ型。特約期間終了後も当初の引下げ幅が続きます。保証料0円（ろうきん負担）。取扱手数料198,000円（生活資金併用時220,000円）。最長40年（要件を満たせば50年・全期間固定35年）・完済時満81歳未満。'},
+ rokina:{name:'まるっと500α（北陸ろうきん）',short:'ろうきん500α',plan:'当初期間引下げ型',
+  rates:emptyR(),base:emptyR(),
+  discMax:1.25,discMin:0.70,
+  maxYear:40,maxYearFixAll:35,maxAge:81,applyMin:18,applyMax:99,minYear:2,maxYearAlt:50,maxYearChuko:null,
+  newFix:['f2','f3','f5','f10'],availFix:['f0','f2','f3','f5','f10','f15','f20','fAll'],
+  jimuType:'fixed',jimuFixed:198000,jimuRate:0,jimuAlt:220000,
+  hosho:'none',hoshoRate:0,ltvMax:0,
+  tk:[{n:'ろうきん団信',u:0,o:0,th:99},{n:'夫婦連生団信',u:0.10,o:0.10,th:99},
+      {n:'オールマイティ保障型（3大疾病・障がい特約）',u:0.20,o:0.20,th:99},{n:'引受緩和団信',u:0.40,o:0.40,th:99}],
+  uw:true,uwMax:500,minIncome:150,minTenure:1,pairNote:true,
+  memo:'当初期間引下げ型。特約期間終了後は取引項目分の引下げ（最大1.25%）のみになり、店頭金利が動かなくても金利が上がります。保証料0円。最長40年（要件を満たせば50年）・完済時満81歳未満。'},
+ ichigin:{name:'富山第一銀行（プライム住宅ローン）',short:'一銀',
+  rates:emptyR(),base:emptyR(),
+  discMax:1.30,discMin:0.50,
+  maxYear:50,maxYearFixAll:50,maxAge:82,applyMin:18,applyMax:99,minYear:2,maxYearAlt:null,maxYearChuko:null,
+  newFix:['f2','f5'],availFix:['f0','f2','f3','f5','f10'],
+  jimuType:'fixed',jimuFixed:220000,jimuRate:0,jimuAlt:330000,
+  hosho:'none',hoshoRate:0,ltvMax:0,kyuyoOnly:true,
+  tk:[{n:'一般団信',u:0,o:0,th:99},{n:'11疾病保障付団信',u:0,o:null,th:51},
+      {n:'3大疾病保障付団信',u:0.20,o:0.20,th:99},{n:'ワイド団信',u:0.30,o:0.30,th:99}],
+  uw:false,minIncome:0,
+  memo:'保証料不要型。給与所得者（会社役員を除く）が対象です。銀行手数料220,000円（審査により330,000円）。最長50年・完済時満82歳未満。新規優遇プランは2年・5年固定のみ。'},
+ other:{name:'その他（手入力）',short:'他行',
+  rates:emptyR(),base:emptyR(),discMax:null,discMin:null,
+  maxYear:35,maxYearFixAll:35,maxAge:80,applyMin:18,applyMax:99,minYear:1,maxYearAlt:null,maxYearChuko:null,
+  newFix:['f0','f2','f3','f5','f10','f15','f20','fAll'],availFix:['f0','f2','f3','f5','f10','f15','f20','fAll'],
+  jimuType:'rate',jimuFixed:33000,jimuRate:2.2,jimuAlt:null,
+  hosho:'ikkatsu',hoshoRate:2.06,ltvMax:0,
+  tk:[{n:'一般団信',u:0,o:0,th:99},{n:'疾病保障特約',u:null,o:null,th:50}],
+  uw:false,minIncome:0,memo:'金融機関の条件を直接入力してください。'}
+}};
+var M=JSON.parse(JSON.stringify(BASE));
+try{const c=localStorage.getItem('vivi_rates_v5');if(c){const p=JSON.parse(c);if(p&&p.banks)M=p;}}catch(e){}
+migrate();
+function migrate(){
+ Object.keys(BASE.banks).forEach(k=>{if(!M.banks[k])M.banks[k]=JSON.parse(JSON.stringify(BASE.banks[k]));
+  Object.keys(BASE.banks[k]).forEach(f=>{if(M.banks[k][f]===undefined)M.banks[k][f]=BASE.banks[k][f];});});
+ Object.values(M.banks).forEach(B=>{B.rates=Object.assign(emptyR(),B.rates||{});B.base=Object.assign(emptyR(),B.base||{});});
+}
+try{if(typeof fetch==='function'){fetch('rates.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
+ if(j&&j.banks){M=j;migrate();try{localStorage.setItem('vivi_rates_v5',JSON.stringify(M))}catch(e){}onBank();}}).catch(()=>{});}}catch(e){}
+
+let BANK='hokugin',FIXK='f2',AFIX='same',DISCMODE='max',GOAL=70,PTYPE='mansion';
+
+/* ===== マスタ編集 ===== */
+function buildRateTable(){
+ const bs=Object.keys(M.banks);
+ let h='<tr><th style="width:186px"></th>'+bs.map(b=>`<th class="bk">${M.banks[b].short}</th>`).join('')+'</tr>';
+ const cell=(b,f,v,ph,tp)=>`<td><input type="${tp||'number'}" step="0.001" data-b="${b}" data-f="${f}" value="${v??''}"${ph?` placeholder="${ph}"`:''}></td>`;
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">当初適用金利（毎月チラシから入力）</th></tr>`;
+ FIXDEF.forEach(([k,lb])=>{h+=`<tr><td class="lb">${lb} <span style="color:var(--soft)">%</span></td>`+bs.map(b=>M.banks[b].availFix.includes(k)?cell(b,'r_'+k,M.banks[b].rates[k],'要入力'):'<td style="background:#F7F8FA"></td>').join('')+'</tr>';});
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">店頭基準金利（毎月チラシから入力・終了後の計算に使用）</th></tr>`;
+ FIXDEF.forEach(([k,lb])=>{h+=`<tr><td class="lb">${lb} <span style="color:var(--soft)">%</span></td>`+bs.map(b=>M.banks[b].availFix.includes(k)?cell(b,'b_'+k,M.banks[b].base[k],'要入力'):'<td style="background:#F7F8FA"></td>').join('')+'</tr>';});
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">引下げ幅・条件（商品概要書の値・変更は稀）</th></tr>`;
+ const row=(lb,f,ph)=>{h+=`<tr><td class="lb">${lb}</td>`+bs.map(b=>cell(b,f,M.banks[b][f],ph)).join('')+'</tr>';};
+ row('終了後 引下げ幅（最大） <span style="color:var(--soft)">%</span>','discMax','要確認');
+ row('終了後 引下げ幅（最低） <span style="color:var(--soft)">%</span>','discMin','要確認');
+ row('最長借入期間 <span style="color:var(--soft)">年</span>','maxYear');
+ row('　全期間固定の場合 <span style="color:var(--soft)">年</span>','maxYearFixAll');
+ row('　長期特例（条件付） <span style="color:var(--soft)">年</span>','maxYearAlt','なし');
+ row('　中古物件の上限 <span style="color:var(--soft)">年</span>','maxYearChuko','制限なし');
+ row('完済時年齢の上限 <span style="color:var(--soft)">歳未満</span>','maxAge');
+ row('申込時年齢の上限 <span style="color:var(--soft)">歳未満</span>','applyMax');
+ row('取扱手数料 <span style="color:var(--soft)">円</span>','jimuFixed');
+ row('　別パターン <span style="color:var(--soft)">円</span>','jimuAlt','なし');
+ row('保証料率（35年） <span style="color:var(--soft)">%</span>','hoshoRate');
+ row('最低年収 <span style="color:var(--soft)">万円</span>','minIncome');
+ row('生活資金の限度額 <span style="color:var(--soft)">万円</span>','uwMax','—');
+ h+=`<tr><td class="lb">保証料の型</td>`+bs.map(b=>`<td><select data-b="${b}" data-f="hosho">${[['ikkatsu','一括前払い'],['none','なし・0円'],['inrate','金利に含む']].map(([v,t])=>`<option value="${v}"${M.banks[b].hosho===v?' selected':''}>${t}</option>`).join('')}</select></td>`).join('')+'</tr>';
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">団信・特約の上乗せ</th></tr>`;
+ for(let i=0;i<4;i++){
+  h+=`<tr><td class="lb">特約${i+1} 名称</td>`+bs.map(b=>{const t=(M.banks[b].tk||[])[i];return `<td><input type="text" style="text-align:left;font-family:inherit;font-size:11px" data-b="${b}" data-f="tk${i}_n" value="${t?t.n:''}" placeholder="—"></td>`}).join('')+'</tr>';
+  h+=`<tr><td class="lb">　境目歳／未満％／以上％</td>`+bs.map(b=>{const t=(M.banks[b].tk||[])[i]||{};
+   return `<td style="white-space:nowrap"><input type="number" style="width:31%;min-width:0" data-b="${b}" data-f="tk${i}_th" value="${t.th??''}"><input type="number" step="0.01" style="width:31%;min-width:0" data-b="${b}" data-f="tk${i}_u" value="${t.u??''}"><input type="number" step="0.01" style="width:31%;min-width:0" data-b="${b}" data-f="tk${i}_o" value="${t.o??''}" placeholder="不可"></td>`}).join('')+'</tr>';
+ }
+ $('rtTable').innerHTML=h;$('rtDate').value=M.date||'';
+ $('rtTable').querySelectorAll('input').forEach(el=>{if(el.placeholder==='要入力'||el.placeholder==='要確認'){
+  if(el.value==='')el.classList.add('miss');el.addEventListener('input',()=>el.classList.toggle('miss',el.value===''));}});
+}
+function collectRates(){
+ $('rtTable').querySelectorAll('input,select').forEach(el=>{
+  const b=el.dataset.b,f=el.dataset.f;if(!b||!f)return;const B=M.banks[b];
+  const v=el.value===''?null:(el.type==='number'?parseFloat(el.value):el.value);
+  if(f.startsWith('r_'))B.rates[f.slice(2)]=v;
+  else if(f.startsWith('b_'))B.base[f.slice(2)]=v;
+  else if(f.startsWith('tk')){const i=+f.slice(2,f.indexOf('_')),k=f.split('_')[1];B.tk=B.tk||[];if(!B.tk[i])B.tk[i]={n:'',u:null,o:null,th:99};B.tk[i][k]=v;}
+  else B[f]=v;});
+ M.date=$('rtDate').value||'';
+ try{localStorage.setItem('vivi_rates_v5',JSON.stringify(M))}catch(e){}
+}
+function saveRates(){collectRates();closeM('rates');onBank();}
+function exportRates(){collectRates();const a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([JSON.stringify(M,null,1)],{type:'application/json'}));
+ a.download='rates.json';a.click();URL.revokeObjectURL(a.href);
+ alert('rates.json を書き出しました。\n\nGitHubのリポジトリ直下に rates.json として置くと、全スタッフの画面に自動反映されます。');}
+function importRates(el){const f=el.files[0];if(!f)return;const r=new FileReader();
+ r.onload=e=>{try{const j=JSON.parse(e.target.result);if(!j.banks)throw 0;M=j;migrate();
+  localStorage.setItem('vivi_rates_v5',JSON.stringify(M));buildRateTable();onBank();alert('金利マスタを読み込みました。');}
+  catch(err){alert('このファイルは読み込めませんでした。')}el.value=''};r.readAsText(f);}
+function openRates(){buildRateTable();openM('rates');}
+
+/* ===== 入力生成 ===== */
+const UNIT={mansion:{a:45000,b:80000,c:115000,d:170000},kodate:{a:50000,b:85000,c:125000,d:190000}};
+const GNAME={a:'水回り4点交換のみ',b:'水回り＋内装',c:'部分リノベ',d:'フルリノベ',x:'直接入力'};
+const FEES=[{k:'chukai',n:'仲介手数料（税込）'},{k:'toki',n:'登記費用・司法書士報酬'},
+ {k:'inshi1',n:'印紙税（売買契約書）'},{k:'inshi2',n:'印紙税（金銭消費貸借契約書）'},
+ {k:'jimu',n:'取扱手数料'},{k:'hosho',n:'ローン保証料'},
+ {k:'kasai',n:'火災・地震保険料（5年一括）'},{k:'seisan',n:'固定資産税等 清算金'},
+ {k:'inspect',n:'既存住宅状況調査（インスペクション）'},{k:'inshi3',n:'印紙税（工事請負契約書）'},
+ {k:'hikkoshi',n:'引越・仮住まい費用'},{k:'kagu',n:'家具・家電・カーテン'},{k:'yobi',n:'予備費'}];
+(function(){let h='';FEES.filter(f=>f.k!=='yobi').forEach(f=>{h+=`<div class="fld"><label>${f.n}</label><div class="unit"><input type="number" id="fx_${f.k}" placeholder="自動" oninput="calc()"><span class="u">円</span></div></div>`});$('feeInputs').innerHTML=h;})();
+function bindSeg(id,cb){$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{
+ $(id).querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');cb(b.dataset.v);});}
+bindSeg('segGoal',v=>{GOAL=+v;calc()});
+bindSeg('segType',v=>{PTYPE=v;$('mansionOnly').style.display=v==='mansion'?'grid':'none';$('kodateOnly').style.display=v==='kodate'?'block':'none';onGrade()});
+bindSeg('segBank',v=>{BANK=v;AFIX='same';onBank()});
+bindSeg('segDisc',v=>{DISCMODE=v;onBank()});
+function onFix(){FIXK=$('fixSel').value;AFIX='same';onBank();}
+function onAfterFix(){AFIX=$('afterFix').value;onBank();}
+
+function afterKey(){return AFIX==='same'?FIXK:AFIX;}
+function onBank(){
+ const B=M.banks[BANK];
+ $('bankMemo').textContent=B.memo||'';
+ $('fixSel').innerHTML=FIXDEF.filter(([k])=>B.availFix.includes(k)).map(([k,lb])=>`<option value="${k}">${lb}${B.newFix.includes(k)?'':'（新規選択不可）'}</option>`).join('');
+ if(!B.availFix.includes(FIXK))FIXK=B.newFix[0]||B.availFix[0];
+ $('fixSel').value=FIXK;
+ $('fixNote').textContent=B.newFix.includes(FIXK)?'':`※ ${B.short}は新規お借入時に ${B.newFix.map(fixLabel).join('・')} のみ選択できます。`;
+ $('afterFix').innerHTML='<option value="same">当初と同じタイプ</option>'+FIXDEF.filter(([k])=>B.availFix.includes(k)).map(([k,lb])=>`<option value="${k}">${lb}</option>`).join('');
+ $('afterFix').value=AFIX;
+ $('afterBlk').style.display=FIXK==='fAll'?'none':'block';
+ $('pairFld').style.display=B.pairNote?'block':'none';
+ if(!B.pairNote)$('pairOn').checked=false;
+ $('rokinKaiin').style.display=B.uw?'block':'none';
+ $('uwBlk').style.display=B.uw?'block':'none';
+ if(!B.uw)$('uwOn').checked=false;
+ if(B.uwMax)$('uwAmt').max=B.uwMax;
+ const r=B.rates[FIXK];$('r1').value=r!=null?r:'';$('r1').classList.toggle('miss',r==null);
+ const bb=B.base[afterKey()];$('baseR').value=bb!=null?bb:'';$('baseR').classList.toggle('miss',FIXK!=='fAll'&&bb==null);
+ const dv=DISCMODE==='max'?B.discMax:B.discMin;
+ $('disc').value=dv!=null?dv:'';$('disc').classList.toggle('miss',FIXK!=='fAll'&&dv==null);
+ const cur=$('tokuyaku').value;
+ $('tokuyaku').innerHTML=(B.tk||[]).map((t,i)=>t&&t.n?`<option value="${i}">${t.n}</option>`:'').join('')||'<option value="0">一般団信</option>';
+ $('tokuyaku').value=[...$('tokuyaku').options].some(o=>o.value===cur)?cur:'0';
+ calc();
+}
+function onGrade(){const g=$('grade').value;
+ if(g==='x'){$('renoNote').textContent='見積ツールで算出した税込金額を入力してください。';calc();return;}
+ const u=UNIT[PTYPE][g],a=numv('area');
+ $('reno').value=Math.round(a*u/10000/10)*10;
+ $('renoNote').textContent=`${GNAME[g]}／目安単価 ${(u/10000).toFixed(1)}万円 × ${a}㎡ の概算です。上書きできます。`;calc();}
+
+/* ===== 諸費用 ===== */
+const inshiB=p=>p<=1e6?500:p<=5e6?1000:p<=1e7?5000:p<=5e7?10000:30000;
+const inshiK=p=>p<=5e6?2000:p<=1e7?10000:p<=5e7?20000:60000;
+const inshiU=p=>p<=2e6?200:p<=3e6?500:p<=5e6?1000:p<=1e7?5000:p<=5e7?10000:30000;
+const hoshoAdj=(b,y)=>b*(y<=20?.72:y<=25?.845:y<=30?.927:y<=35?1:y<=40?1.07:1.13);
+function calcFees(price,reno,loan,years,bankKey,useOv,uwOn){
+ const B=M.banks[bankKey],o={},d={};
+ o.chukai=price>4e6?(price*0.03+60000)*1.1:price>2e6?(price*0.04+20000)*1.1:price*0.05*1.1;d.chukai='（価格×3％＋6万円）×消費税';
+ o.toki=price*0.01+150000+loan*0.001;d.toki='登録免許税＋司法書士報酬の概算';
+ o.inshi1=inshiB(price);d.inshi1='売買金額に応じた軽減後の税額';
+ o.inshi2=inshiK(loan);d.inshi2='借入金額に応じた税額';
+ if(B.jimuType==='rate'){o.jimu=loan*(B.jimuRate||0)/100;d.jimu=`借入額×${B.jimuRate}％`;}
+ else if(uwOn&&B.jimuAlt&&B.uw){o.jimu=B.jimuAlt;d.jimu=`住宅資金＋生活資金 同時申込の場合 ${yen(B.jimuAlt)}円`;}
+ else{o.jimu=B.jimuFixed||0;d.jimu=`${yen(B.jimuFixed||0)}円${B.jimuAlt&&!B.uw?`（審査により${yen(B.jimuAlt)}円）`:''}`;}
+ if(B.hosho==='ikkatsu'&&B.hoshoRate){const rr=hoshoAdj(B.hoshoRate,years);o.hosho=loan*rr/100;d.hosho=`借入額×${rr.toFixed(2)}％（${years}年・一括前払い）`;}
+ else{o.hosho=0;d.hosho=B.hosho==='inrate'?'お借入金利に含まれます（別途負担なし）':'保証料0円（金融機関負担）';}
+ o.kasai=PTYPE==='mansion'?100000:220000;d.kasai=PTYPE==='mansion'?'マンション（M構造）5年・地震保険込の目安':'木造戸建（H構造）5年・地震保険込の目安';
+ o.seisan=numv('tax')*0.5;d.seisan='年税額の概ね半年分';
+ o.inspect=66000;d.inspect='既存住宅状況調査の一般的な費用';
+ o.inshi3=inshiU(reno);d.inshi3='工事請負金額に応じた軽減後の税額';
+ o.hikkoshi=reno>=5e6?350000:120000;d.hikkoshi=reno>=5e6?'仮住まい（約3ヶ月）＋引越2回の目安':'引越1回の目安';
+ o.kagu=chk('incFurniture')?500000:0;d.kagu=chk('incFurniture')?'新生活の初期費用の目安':'含めない設定';
+ if(useOv)FEES.filter(f=>f.k!=='yobi').forEach(f=>{const el=$('fx_'+f.k);if(el&&el.value!==''){o[f.k]=parseFloat(el.value)||0;d[f.k]='手入力';}});
+ let sub=0;FEES.filter(f=>f.k!=='yobi').forEach(f=>sub+=o[f.k]||0);
+ o.yobi=(price+reno)*(numv('yobiRate')/100);d.yobi=`（物件価格＋工事費）×${numv('yobiRate')}％`;
+ return {o,d,total:sub+o.yobi};
+}
+
+/* ===== 試算 ===== */
+function runBank(bk,useOv,discMode,fallback){
+ const B=M.banks[bk],age=numv('age');
+ const price=numv('price')*1e4,reno=numv('reno')*1e4,own=(numv('own')+numv('gift'))*1e4;
+ let fk=B.availFix.includes(FIXK)?FIXK:(B.newFix[0]||B.availFix[0]);
+ let fkSub=false;
+ if(fallback&&B.rates[fk]==null){
+  const alt=(B.newFix||[]).find(k=>B.rates[k]!=null)||(B.availFix||[]).find(k=>B.rates[k]!=null);
+  if(alt){fk=alt;fkSub=true;}
+ }
+ const prodY=(function(){if(fk==='fAll')return B.maxYearFixAll||35;let y=B.maxYear||35;
+  if(B.maxYearAlt&&chk('altOn'))y=B.maxYearAlt;if(B.maxYearChuko!=null)y=Math.min(y,B.maxYearChuko);return y;})();
+ const ageY=Math.max(1,(B.maxAge||80)-1-age);
+ const maxY=Math.min(prodY,ageY);
+ const years=Math.max(1,Math.min(maxY,GOAL-age)),n=years*12;
+ const capped=(GOAL-age)>maxY,capBy=(ageY<prodY&&(GOAL-age)>ageY)?'age':'prod';
+ const fixN=(fk==='fAll')?n:fixYears(fk)*12;
+ /* 特約の上乗せ */
+ const tv=+$('tokuyaku').value||0;
+ let tkAdd=0,tkName='',tkNA=false;
+ if(B.tk){const want=((M.banks[BANK].tk||[])[tv]||{}).n||'';
+  const t=B.tk.find(x=>x&&x.n===want)||B.tk[tv]||B.tk[0];
+  if(t){const th=t.th??99,v=age>=th?t.o:t.u;tkName=t.n;if(v==null&&age>=th)tkNA=true;tkAdd=v??0;}}
+ /* 当初金利 */
+ const rBase=(bk===BANK&&has('r1'))?numv('r1'):B.rates[fk];
+ const r1=(rBase??0)+tkAdd;
+ /* 終了後金利 = 店頭基準 + 想定上昇 − 引下げ幅 */
+ const ak=(bk===BANK&&AFIX!=='same')?AFIX:fk;
+ const stTen=(bk===BANK&&has('baseR'))?numv('baseR'):B.base[ak];
+ const dm=discMode||DISCMODE;
+ const dRaw=(bk===BANK&&has('disc')&&dm===DISCMODE)?numv('disc'):(dm==='max'?B.discMax:B.discMin);
+ const upv=numv('up');
+ const r2raw=(stTen!=null&&dRaw!=null)?Math.max(0,stTen+upv-dRaw):null;
+ const r2=(fk==='fAll')?r1:((r2raw!=null?r2raw:r1)+tkAdd);
+ /* 生活資金 */
+ const uwOn=chk('uwOn')&&B.uw;
+ const uwAmt=uwOn?numv('uwAmt')*1e4:0;
+ const uwR=uwOn?((bk===BANK&&has('uwRate'))?numv('uwRate'):0):0;
+ const uwPay=uwAmt>0?pmt(uwAmt,uwR,n):0,uwTot=uwPay*n;
+ const matome=uwOn&&chk('uwMatome');
+ const olPay=numv('otherLoan'),olRemain=matome?0:numv('otherBal')*1e4;
+ /* 借入額 */
+ let loan=Math.max(0,price+reno-own),F;
+ for(let i=0;i<6;i++){F=calcFees(price,reno,loan,years,bk,useOv,uwOn);
+  loan=chk('incFee')?Math.max(0,price+reno+F.total-own):Math.max(0,price+reno-own);}
+ const need=price+reno+F.total;
+ const m1=pmt(loan,r1,n);
+ const b2=(fixN>0&&fixN<n)?bal(loan,r1,n,fixN):loan;
+ const m2=(fixN>0&&fixN<n)?pmt(b2,r2,n-fixN):m1;
+ const totRepay=(fixN>0&&fixN<n)?m1*fixN+m2*(n-fixN):m1*n;
+ const cashOut=chk('incFee')?Math.max(0,Math.min(own,need)):Math.min(own,price+reno)+F.total;
+ return {B,bankKey:bk,fk,fkSub,ak,years,n,maxY,prodY,ageY,capped,capBy,fixN,r1,r2,rBase,stTen,disc:dRaw,upv,
+  tkAdd,tkName,tkNA,loan,need,F,m1,m2,uwOn,uwAmt,uwR,uwPay,uwTot,matome,olPay,olRemain,
+  price,reno,own,cashOut,totRepay,totAll:totRepay+uwTot+cashOut+olRemain,
+  ready:rBase!=null&&(fk==='fAll'||(stTen!=null&&dRaw!=null))};
+}
+
+/* ===== 商品ルールの注意喚起 ===== */
+function rules(R){
+ const B=R.B,age=numv('age'),out=[],fin=age+R.years;
+ const add=(lv,t)=>out.push({lv,t});
+ if(!R.ready)add('n','金利が未入力です。金利マスタから当初適用金利と店頭基準金利を入力してください。');
+ if(age<(B.applyMin||18))add('n',`申込時年齢は満${B.applyMin}歳以上が条件です。`);
+ if(B.applyMax<99&&age>=B.applyMax)add('n',`${B.short}の申込時年齢は満${B.applyMax}歳未満が条件です。現在${age}歳のため対象外の可能性があります。`);
+ if(fin>=B.maxAge)add('n',`完済時年齢が${fin}歳となり、${B.short}の条件「満${B.maxAge}歳未満」を超えます。期間の短縮が必要です。`);
+ if(R.years<(B.minYear||1))add('w',`借入期間の下限は${B.minYear}年です。`);
+ if(!B.newFix.includes(R.fk))add('w',`${fixLabel(R.fk)}は新規お借入時には選択できません。${B.short}の新規は ${B.newFix.map(fixLabel).join('・')} のみです。特約期間終了後の見直し時に選択できます。`);
+ if(R.tkNA)add('n',`「${R.tkName}」は${age}歳のお客様には取扱いがない可能性があります。加入可否を必ず金融機関にご確認ください。`);
+ if(R.tkAdd>0)add('w',`「${R.tkName}」の上乗せ ${R.tkAdd.toFixed(2)}％ を金利に含めて計算しています。年齢区分と上乗せ率は必ず商品概要書でご確認ください。`);
+ if(B.minIncome&&numv('income')<B.minIncome)add('n',`${B.short}は年収${B.minIncome}万円以上が条件です。現在${numv('income')}万円のため対象外の可能性があります。`);
+ if(B.minTenure&&numv('tenure')<B.minTenure)add('w',`${B.short}は原則勤続${B.minTenure}年以上が条件です。`);
+ if(B.kyuyoOnly&&$('job').value!=='kyuyo')
+  add('n',`保証料不要型の「プライム住宅ローン」は<b>給与所得者（会社役員を除く）</b>が対象です。${$('job').value==='yakuin'?'会社役員':'自営業'}のお客様は保証付タイプとなり、<b>保証料の一括前払いと保証会社手数料（33,000〜55,000円）が別途必要</b>です。保証会社によって完済時年齢の条件も変わります（かんそうしん満85歳未満／全国保証は満80歳未満かつ年収400万円以上）。`);
+ if(B.pairNote&&chk('pairOn'))add('n',`<b>夫婦連生保障付の税務上の注意：</b>別途金利の上乗せがあります（率は金融機関にご確認ください）。また団信の保険金でローンが完済された場合、<b>相手方の住宅ローンが免除される部分が一時所得とみなされ、所得税の課税対象となる場合があります。</b>お客様には税務署へのご確認をご案内してください。`);
+ if(B.hosho==='inrate')add('i',`保証料0円と表示されますが、これは<b>お借入金利に含まれている</b>ためです。「保証料がかからない」という説明は誤解を招きます。`);
+ if(B.hosho==='none')add('o',`保証料は${B.short==='一銀'?'不要':'0円（金融機関負担）'}です。金利にも含まれていません。`);
+ if(B.jimuAlt&&!B.uw)add('w',`取扱手数料は${yen(B.jimuFixed)}円で計算していますが、審査結果により${yen(B.jimuAlt)}円になる場合があります。差額${yen(B.jimuAlt-B.jimuFixed)}円をご説明ください。`);
+ if(B.uw&&R.uwOn)add('w',`生活資金を同時に申し込むため、取扱手数料が${yen(B.jimuFixed)}円から${yen(B.jimuAlt)}円に上がります。`);
+ if(B.uw&&R.uwOn&&numv('uwAmt')>(B.uwMax||500))add('n',`生活資金の限度額は${B.uwMax}万円です。`);
+ if(B.uw)add('i',`引下げ項目に<b>「宅建業者・指定宅建業者から紹介の方」</b>が含まれます。当社からのご紹介が引下げ対象になる可能性があるため、ローンセンターにご確認ください。`);
+ if(B.plan==='当初期間引下げ型')add('n',`<b>当初期間引下げ型です。</b>特約期間終了後は引下げ幅が取引項目分（最大${B.discMax}％）のみになります。店頭金利が動かなくても金利が上がる商品です。必ず終了後の金額をお見せしてください。`);
+ if(B.plan==='全期間引下げ型')add('o',`全期間引下げ型のため、特約期間終了後も当初の引下げ幅が続きます。店頭金利が動かなければ金利は変わりません。`);
+ if(B.ltvMax&&R.loan>(R.price+R.reno)*B.ltvMax/100)
+  add('w',`お借入額が物件価格＋工事費の${(R.loan/(R.price+R.reno)*100).toFixed(0)}％です。${B.short}は銀行評価額の最大${B.ltvMax}％までのため、評価額によっては減額の可能性があります。`);
+ if(DISCMODE==='max')add('w',`<b>最大優遇（${R.disc??'—'}％引下げ）で計算しています。</b>取引項目の該当数によっては引下げ幅が小さくなります。「最低優遇」に切り替えた金額も必ずお見せしてください。`);
+ if(BANK==='hokugin')add('w',`北陸銀行は<b>直近1年以内に1か月を超える返済の遅延</b>があった場合、終了後の引下げが適用されないことがあります。他社ローンの返済状況をご確認ください。`);
+ if(BANK==='hokugin')add('i',`富山県内にお住まいの方が対象の商品です。`);
+ add('i',`3行とも「物件やその他条件によって融資期間が異なる場合がある」と明記されています。中古物件のため、事前審査で実際の期間を必ずご確認ください。`);
+ return out;
+}
+
+/* ===== メイン ===== */
+function calc(){
+ const B=M.banks[BANK],R=runBank(BANK,true);
+ const {price,reno,own,years,n,fixN,r1,r2,loan,need,F,m1,m2,uwPay,uwAmt,matome,olPay}=R;
+ $('allowv').textContent=(numv('allow')>=0?'＋':'−')+yen(Math.abs(numv('allow')))+'円';
+ $('upv').textContent='+'+numv('up').toFixed(1)+'%';
+ $('altFld').style.display=B.maxYearAlt?'block':'none';
+ $('altLbl').textContent=B.maxYearAlt?`一定の要件を満たし、最長${B.maxYearAlt}年で組める`:'';
+ $('goalNote').innerHTML=R.capped
+  ?(R.capBy==='age'?`※ ${B.short}は完済時 満${B.maxAge}歳未満が条件のため ${R.ageY}年 が上限です。完済は ${numv('age')+years}歳。`
+    :`※ ${B.short}の借入期間の上限 ${R.prodY}年 で頭打ちのため、完済は ${numv('age')+years}歳。`)
+  :`${B.short}の上限：借入 ${R.prodY}年／完済時 満${B.maxAge}歳未満`;
+ $('tkNote').textContent=R.tkAdd>0?`上乗せ +${R.tkAdd.toFixed(2)}％（${numv('age')}歳の区分）`:(R.tkNA?'この年齢では取扱いがない可能性があります':'上乗せなし');
+
+ /* 計算式の表示 */
+ if(R.fk!=='fAll'&&R.stTen!=null&&R.disc!=null)
+  $('calcLine').innerHTML=`店頭基準 <b>${R.stTen.toFixed(3)}％</b> ＋ 想定上昇 <b>${R.upv.toFixed(2)}％</b> − 引下げ <b>${R.disc.toFixed(2)}％</b>${R.tkAdd?` ＋ 特約 <b>${R.tkAdd.toFixed(2)}％</b>`:''} ＝ <b style="color:var(--orange-d);font-size:15px">${r2.toFixed(3)}％</b>`;
+ else $('calcLine').innerHTML='<span style="color:var(--soft)">店頭基準金利と引下げ幅を入力すると、終了後の金利が計算されます。</span>';
+
+ /* 築年数 */
+ const bt=numv('built'),byear=new Date().getFullYear()-bt;let bw='';
+ if(bt>0){
+  if(byear<=1981)bw+=`<div class="msg n" style="margin:0 0 9px;padding:9px 12px;font-size:12px"><b>築${bt}年（${byear}年頃の建築）です。</b>旧耐震基準の可能性があります。融資の可否・条件が厳しくなるほか、<b>住宅ローン控除は1982年1月1日以降に建築された住宅が要件</b>で、それ以前は耐震基準適合証明書等が必要です。</div>`;
+  else if(byear<=1984)bw+=`<div class="msg w" style="margin:0 0 9px;padding:9px 12px;font-size:12px"><b>築${bt}年（${byear}年頃の建築）です。</b>登記簿上の建築日付が1982年1月1日以降かどうかで住宅ローン控除の扱いが変わります。登記情報で必ずご確認ください。</div>`;
+  if(bt>=(PTYPE==='kodate'?25:35))bw+=`<div class="msg w" style="margin:0 0 9px;padding:9px 12px;font-size:12px"><b>中古物件の借入期間にご注意ください。</b>築年数によっては最長期間より短い期間しか組めない場合があります（特に木造戸建）。この試算は ${years}年 ですが、<b>事前審査で実際に何年組めるかを必ずご確認ください。</b></div>`;
+  if(B.karikaeYearRule&&bt>0){const kr=Math.max(2,B.karikaeYearRule-bt);
+   bw+=`<div class="msg" style="margin:0 0 9px;padding:9px 12px;font-size:12px;background:var(--tint);border:1px solid var(--line);color:var(--mid)"><b>参考｜${B.short}の築年数の扱い：</b>他行からの<u>借換</u>の場合、融資期間は「${B.karikaeYearRule}年 − 築後経過年数」または他行の残返済期間の長い方、と定められています。この物件（築${bt}年）に同じ計算をあてると <b>${kr}年</b> です。<b>これは借換のルールで、購入時にそのまま適用されるものではありません</b>が、築年数が期間に影響しうる目安として、事前審査でご確認ください。</div>`;}
+ }
+ $('builtWarn').innerHTML=bw;
+
+ /* 生活資金 */
+ if(B.uw&&chk('uwOn')){
+  const lim=B.uwMax||500,amt=numv('uwAmt');
+  const uses=[['uwKagu','家財購入・引越費用'],['uwCar','自動車'],['uwEdu','教育・結婚'],['uwMatome','無担保ローンの借換']].filter(x=>chk(x[0])).map(x=>x[1]);
+  $('uwTerm').innerHTML=`返済期間は住宅資金と同じ <b>${years}年</b>／月々 <b>${yen(uwPay)}円</b>${uses.length?`／使いみち：${uses.join('・')}`:''}`;
+  let w='';
+  if(amt>lim)w+=`<div class="msg n" style="margin:0 0 9px;padding:8px 11px;font-size:12px"><b>限度額を超えています。</b>生活資金は最高${lim}万円です（現在${amt}万円）。</div>`;
+  if(matome&&olPay>0){const df=olPay-uwPay;
+   w+=`<div class="msg ${df>0?'o':'w'}" style="margin:0 0 9px;padding:8px 11px;font-size:12px"><b>借換の効果：</b>いまの無担保ローン ${yen(olPay)}円/月 が ${yen(uwPay)}円/月 になります。${df>0?`<b>月 ${yen(df)}円 軽くなります。</b>ただし${years}年かけて返すため、総支払利息は増えます。`:`月 ${yen(-df)}円 増えます。`}</div>`;}
+  if(matome&&numv('otherBal')>amt)w+=`<div class="msg w" style="margin:0 0 9px;padding:8px 11px;font-size:12px">残債 ${numv('otherBal')}万円 に対し上乗せ額が ${amt}万円 です。借換には残債以上が必要です。</div>`;
+  $('uwWarn').innerHTML=w;
+ }else{$('uwTerm').innerHTML='';$('uwWarn').innerHTML='';}
+
+ /* 商品ルール */
+ const rl=rules(R);
+ const ic={n:'✕',w:'!',o:'○',i:'i'};
+ $('ruleBody').innerHTML=rl.map(x=>`<div class="msg ${x.lv==='i'?'':x.lv}" style="margin:0 0 8px;padding:9px 12px;font-size:12.5px${x.lv==='i'?';background:var(--tint);border:1px solid var(--line);color:var(--mid)':''}"><b style="margin-right:6px">${ic[x.lv]}</b>${x.t}</div>`).join('');
+ const nn=rl.filter(x=>x.lv==='n').length,nw=rl.filter(x=>x.lv==='w').length;
+ $('ruleCount').innerHTML=`${nn?`<span class="pill bd">要確認 ${nn}</span> `:''}${nw?`<span class="pill wn">注意 ${nw}</span>`:''}${!nn&&!nw?'<span class="pill gd">問題なし</span>':''}`;
+
+ /* 金利バー */
+ let stale=false,days=null;
+ if(M.date){days=Math.floor((Date.now()-new Date(M.date).getTime())/86400000);stale=days>45;}
+ const bar=$('rateBar');
+ if(!R.ready){bar.className='on';bar.innerHTML='<b>金利が未入力です。</b>各行のチラシから当初適用金利と店頭基準金利を入力してください。<button onclick="openRates()">金利マスタを開く</button>';}
+ else if(!M.date){bar.className='on stale';bar.innerHTML='<b>金利の確認日が未記録です。</b><button onclick="openRates()">金利マスタを開く</button>';}
+ else if(stale){bar.className='on stale';bar.innerHTML=`<b>金利の確認から ${days}日 経過しています。</b>提示前に最新金利をご確認ください。<button onclick="openRates()">金利マスタを開く</button>`;}
+ else bar.className='';
+ const ok=R.ready;
+ $('printWarn').className=(!ok||!M.date||stale)?'on':'';
+ $('rtStamp').textContent=M.date?`金利 ${M.date} 時点`:'金利 未確認';
+
+ /* hero */
+ const fl=fixLabel(R.fk);
+ $('heroBank').textContent=B.short;
+ $('heroFix').textContent=fl+(R.tkAdd?`・${R.tkName}`:'')+`・${DISCMODE==='max'?'最大優遇':'最低優遇'}`;
+ $('cap1').textContent=R.fk==='fAll'?`全期間（${r1.toFixed(3)}％）`:R.fk==='f0'?`変動（${r1.toFixed(3)}％）`:`当初${fixYears(R.fk)}年間（${r1.toFixed(3)}％）`;
+ $('cap2').textContent=R.fk==='fAll'?'完済まで変わりません':`${R.fk==='f0'?'金利上昇後':fixYears(R.fk)+'年目以降'}（${r2.toFixed(3)}％）`;
+ $('pay1').textContent=ok?yen(m1+uwPay):'—';$('pay2').textContent=ok?yen(m2+uwPay):'—';
+ const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu');
+ const other=numv('tax')/12+F.o.kasai/60;
+ const olAfter=matome?0:olPay;
+ $('sub1').innerHTML=(uwAmt>0?`住宅 ${yen(m1)} ＋ 生活 ${yen(uwPay)}<br>`:'')+'＋ 維持費 '+yen(keep+other)+'円';
+ $('sub2').innerHTML=(uwAmt>0?`住宅 ${yen(m2)} ＋ 生活 ${yen(uwPay)}<br>`:'')+'＋ 維持費 '+yen(keep+other)+'円';
+ $('diffTop').textContent=(m2-m1)<1?'変わりません':'月 ＋'+yen(m2-m1)+'円';
+ $('mb1').textContent=ok?yen(m1+uwPay):'—';$('mb2').textContent=ok?yen(m2+uwPay):'—';
+ $('fyLbl').textContent=(R.fk!=='fAll'&&R.fk!=='f0')?fixYears(R.fk)+'年間':'';
+ $('kTotal').innerHTML=man(need)+'<small>万</small>';$('kOwn').innerHTML=man(R.cashOut)+'<small>万</small>';
+ $('kLoan').innerHTML=man(loan+uwAmt)+'<small>万</small>';$('kYear').innerHTML=years+'<small>年</small>';
+ $('phMeta').textContent=($('cname').value?$('cname').value+'　':'')+new Date().toLocaleDateString('ja-JP')+`　／　${B.name}・${fl}・${DISCMODE==='max'?'最大優遇':'最低優遇'}`+(M.date?`（金利 ${M.date} 時点）`:'');
+
+ /* A */
+ const rentAll=numv('rent')+numv('rentkanri')+numv('rentpark')+olPay;
+ $('olLbl').textContent=olPay>0?'・他社ローン':'';
+ const buy1=m1+uwPay+keep+other+olAfter,buy2=m2+uwPay+keep+other+olAfter;
+ const mx=Math.max(rentAll,buy1,buy2,1),w=x=>(x/mx*100).toFixed(1)+'%';
+ $('bRent').textContent=yen(rentAll)+'円';$('bBuy1').textContent=yen(buy1)+'円';$('bBuy2').textContent=yen(buy2)+'円';
+ $('bR1').style.width=w(numv('rent'));$('bR2').style.width=w(numv('rentkanri')+numv('rentpark'));$('bR3').style.width=w(olPay);
+ $('bB1').style.width=w(m1);$('bB1m').style.width=w(uwPay);$('bB2').style.width=w(keep);$('bB3').style.width=w(other);$('bB4').style.width=w(olAfter);
+ $('bC1').style.width=w(m2);$('bC1m').style.width=w(uwPay);$('bC2').style.width=w(keep);$('bC3').style.width=w(other);$('bC4').style.width=w(olAfter);
+ const d1=buy1-rentAll,d2=buy2-rentAll;let rm,rc;
+ if(d2<=0){rc='o';rm=`特約期間が終わった後でも、いまの支出より <b>月 ${yen(-d2)}円 おトク</b>です。当初は月 ${yen(-d1)}円 の差。`;}
+ else if(d2<=10000){rc='o';rm=`当初は${d1<=0?`月 ${yen(-d1)}円 おトク`:`月 ${yen(d1)}円 の増`}。終了後でも差は <b>月 ${yen(d2)}円</b> に収まります。`;}
+ else if(d2<=25000){rc='w';rm=`当初は${d1<=0?`月 ${yen(-d1)}円 おトク`:`月 ${yen(d1)}円 の増`}ですが、終了後は <b>月 ${yen(d2)}円の増</b>。工事内容か期間の見直しをご検討ください。`;}
+ else{rc='n';rm=`終了後の負担が <b>いまより月 ${yen(d2)}円 増</b>。開きが大きい状態です。Dでご予算に合う工事金額をご確認ください。`;}
+ if(uwAmt>0)rm+=`<br>※ 生活資金 ${man(uwAmt)}万円（${R.uwR.toFixed(3)}％・${years}年）の返済 ${yen(uwPay)}円/月 を含みます。`;
+ if(matome&&olPay>0)rm+=`<br>※ 他社ローン ${yen(olPay)}円/月 は借換前提のため購入後に計上していません。`;
+ $('rentMsg').className='msg '+rc;$('rentMsg').innerHTML=rm;
+
+ /* B：最大優遇／最低優遇 × 店頭上昇 */
+ if(R.fk==='fAll'){
+  $('scnBody').innerHTML=`<tr><td>全期間固定</td><td class="n">—</td><td class="n">—</td><td class="n">${r1.toFixed(3)}％</td><td class="n">${yen(m1)}円</td><td class="n">—</td></tr>`;
+  $('scnMsg').className='msg o';$('scnMsg').innerHTML='<b>全期間固定のため、完済まで返済額は変わりません。</b>金利上昇リスクはありませんが、その分だけ当初金利は高めです。';
+  $('scnTalk').innerHTML=`「全期間固定ですので、${years}年間ずっと ${yen(m1+uwPay)}円 のままです。」`;
+ }else{
+  let sb='';
+  [['最大優遇','max',0],['最大優遇','max',0.5],['最大優遇','max',1.0],['最低優遇','min',0],['最低優遇','min',0.5],['最低優遇','min',1.0]].forEach(([lb,dm,u])=>{
+   const dd=dm==='max'?B.discMax:B.discMin, st=R.stTen;
+   if(st==null||dd==null){sb+=`<tr><td>${lb}・店頭+${u.toFixed(1)}%</td><td colspan="5" style="text-align:left;color:var(--soft)">金利未入力</td></tr>`;return;}
+   const rr=Math.max(0,st+u-dd)+R.tkAdd;
+   const mm=(fixN>0&&fixN<n)?pmt(bal(loan,r1,n,fixN),rr,n-fixN):pmt(loan,rr,n);
+   const cur=(dm===DISCMODE&&Math.abs(u-R.upv)<0.03);
+   sb+=`<tr${cur?' class="hl"':''}><td>${lb}${cur?' <span class="pill rec">表示中</span>':''}</td><td class="n">${st.toFixed(3)}${u?`<span style="color:var(--orange-d)">+${u.toFixed(1)}</span>`:''}％</td><td class="n">−${dd.toFixed(2)}％</td><td class="n"><b>${rr.toFixed(3)}％</b></td><td class="n">${yen(mm)}円</td><td class="n" style="color:${mm-m1>0?'var(--orange-d)':'var(--soft)'}">${mm-m1>0?'＋':''}${yen(mm-m1)}円</td></tr>`;
+  });
+  $('scnBody').innerHTML=sb;
+  if(B.plan==='当初期間引下げ型'){$('scnMsg').className='msg n';
+   $('scnMsg').innerHTML=`<b>${B.name}は当初期間引下げ型です。</b>特約期間の${fixYears(R.fk)}年が終わると引下げ幅が取引項目分（最大${B.discMax}％）のみになり、<b>店頭金利が動かなくても返済額が上がります。</b>この点を伝えずに契約すると必ずトラブルになります。`;}
+  else if(B.plan==='全期間引下げ型'){$('scnMsg').className='msg w';
+   $('scnMsg').innerHTML=`<b>${B.name}は全期間引下げ型です。</b>引下げ幅は完済まで続きますが、店頭基準金利そのものが上がれば返済額は上がります。上の表で店頭が0.5％・1.0％上がった場合をご確認ください。`;}
+  else{$('scnMsg').className='msg w';
+   $('scnMsg').innerHTML=`<b>特約期間終了後は金利が見直されます。</b>${BANK==='hokugin'?'北陸銀行は店頭基準金利から年1.3％〜1.7％の引下げですが、取引状況や直近1年以内の返済遅延により引下げ幅が変わります。':''}変動金利の「5年ルール」「125％ルール」は固定期間選択型には適用されないのが一般的です。`;}
+  $('scnTalk').innerHTML=`「当初${fixYears(R.fk)||''}${R.fk==='f0'?'':'年'}は ${yen(m1+uwPay)}円です。${fixYears(R.fk)?fixYears(R.fk)+'年後':'金利が上がると'}、店頭基準 ${R.stTen!=null?R.stTen.toFixed(2)+'％':'—'} から ${R.disc!=null?R.disc.toFixed(2)+'％':'—'} 引いた ${r2.toFixed(2)}％ になり、月 ${yen(m2+uwPay)}円 になります。<b>月 ${yen(m2-m1)}円、年間 ${yen((m2-m1)*12)}円</b> の差です。取引条件を満たせない場合はもう少し上がります。この金額でも大丈夫か、いま一緒に確認させてください。」`;
+ }
+
+ /* C */
+ const age2=numv('age');let ab='';
+ [65,70,75,80].forEach(g=>{
+  const y=Math.max(1,Math.min(R.maxY,g-age2)),nn2=y*12;
+  const a1=pmt(loan,r1,nn2),bb2=(fixN>0&&fixN<nn2)?bal(loan,r1,nn2,fixN):loan;
+  const a2=(fixN>0&&fixN<nn2)?pmt(bb2,r2,nn2-fixN):a1;
+  const au=uwAmt>0?pmt(uwAmt,R.uwR,nn2):0;
+  const tot=(fixN>0&&fixN<nn2)?a1*fixN+a2*(nn2-fixN):a1*nn2;
+  const cur=g===GOAL,cap=(g-age2)>R.maxY,overAge=g>=B.maxAge;
+  let tag='';
+  if(overAge)tag=`<span class="pill bd">満${B.maxAge}歳未満が条件</span>`;
+  else if(cap)tag=`<span class="pill wn">上限${R.maxY}年</span>`;
+  else if(a2+au+keep+other+olAfter<=rentAll+10000)tag='<span class="pill gd">いまと同水準</span>';
+  ab+=`<tr${cur?' class="hl"':''}><td>${cap?age2+y:g}歳${cur?' <span class="pill rec">選択中</span>':''}</td><td class="n">${y}年</td><td class="n">${yen(a1+au)}円</td><td class="n">${yen(a2+au)}円</td><td class="n">${man(tot)}万円</td><td>${tag}</td></tr>`;});
+ $('ageBody').innerHTML=ab;
+ const p65=pmt(loan,r1,Math.max(1,Math.min(R.maxY,65-age2))*12),p70=pmt(loan,r1,Math.max(1,Math.min(R.maxY,70-age2))*12);
+ if(GOAL>=75){$('ageMsg').className='msg w';$('ageMsg').innerHTML=`完済が${age2+years}歳になります。年金生活に入ってからの返済が残る点はご認識ください。70歳完済なら月 ${yen(p70+uwPay)}円。`;}
+ else if(GOAL===65){$('ageMsg').className='msg o';$('ageMsg').innerHTML=`定年前に完済する堅実な組み方です。<b>70歳完済で組めば月 ${yen(p70+uwPay)}円（${yen(p65-p70)}円 軽く）</b>にでき、余裕資金で繰上返済して前倒しする方法もあります。${B.uw?'ろうきんはインターネットバンキングからの全額繰上償還手数料が無料です。':BANK==='hokugin'?'北陸銀行はインターネットバンキングからの一部繰上返済手数料が無料です。':''}`;}
+ else{$('ageMsg').className='msg o';$('ageMsg').innerHTML=`70歳完済でのご提案です。65歳完済にすると月 ${yen(p65+uwPay)}円（＋${yen(p65-p70)}円）。まず無理なく組み、余裕が出たら繰上返済で前倒しするのが現実的です。`;}
+
+ /* D */
+ const target=rentAll+numv('allow');
+ const avail=Math.max(0,target-keep-other-uwPay-olAfter);
+ const capLoan=loanFrom(avail,r2,n);
+ let rReno=0,RF;
+ for(let i=0;i<6;i++){RF=calcFees(price,Math.max(0,rReno),capLoan,years,BANK,true,chk('uwOn'));rReno=capLoan+own-price-RF.total;}
+ const area=numv('area');
+ const rG=(()=>{if(rReno<=0)return null;const u=UNIT[PTYPE],pu=rReno/Math.max(area,1);
+  return pu>=u.d*.95?'D フルリノベ':pu>=u.c*.95?'C 部分リノベ':pu>=u.b*.95?'B 水回り＋内装':pu>=u.a*.9?'A 水回り交換':null;})();
+ $('revBody').innerHTML=`
+  <tr><td>お支払いの目標額（月）</td><td class="n">${yen(target)}円</td></tr>
+  <tr><td>うち 維持費</td><td class="n">− ${yen(keep+other)}円</td></tr>
+  ${uwPay>0?`<tr><td>うち 生活資金の返済</td><td class="n">− ${yen(uwPay)}円</td></tr>`:''}
+  ${olAfter>0?`<tr><td>うち 他社ローン（継続分）</td><td class="n">− ${yen(olAfter)}円</td></tr>`:''}
+  <tr><td>住宅ローン返済に回せる額（月）</td><td class="n">${yen(avail)}円</td></tr>
+  <tr><td>お借入可能額 <span style="color:var(--soft);font-size:11px">終了後金利 ${r2.toFixed(3)}％・${years}年で試算</span></td><td class="n">${man(capLoan)}万円</td></tr>
+  <tr><td>＋ ご自己資金</td><td class="n">${man(own)}万円</td></tr>
+  <tr><td>− 物件価格</td><td class="n">${man(price)}万円</td></tr>
+  <tr><td>− 諸費用</td><td class="n">${man(RF.total)}万円</td></tr>
+  <tr class="tot"><td>リノベーションに回せるご予算</td><td class="n">${rReno>0?man(rReno)+'万円':'0万円'}</td></tr>`;
+ if(rReno<=0){$('revMsg').className='msg n';
+  $('revMsg').innerHTML=`このご予算では工事費が確保できません。<b>物件価格を ${man(-rReno)}万円 下げる</b>か、期間を延ばす、月々の許容額を上げる必要があります。`;
+  $('revTalk').innerHTML=`「この物件ですと、いまと同じお支払いに収めるのは少し厳しいです。もう少しお手頃な物件でしたら、しっかりリノベーションできます。」`;
+ }else{const df=rReno-reno;
+  $('revMsg').className=df>=0?'msg o':'msg w';
+  $('revMsg').innerHTML=df>=0?`いまの支出${numv('allow')===0?'と同額':'から'+(numv('allow')>0?'＋'+yen(numv('allow')):'−'+yen(-numv('allow')))+'円'}のお支払いで、<b>${man(rReno)}万円のリノベーション</b>が可能です。${rG?`グレードでいうと <b>${rG}</b> の水準。`:''}現在の工事費（${man(reno)}万円）に対し <b>${man(df)}万円の余裕</b>があります。`
+   :`いまのご予算だと工事費は <b>${man(rReno)}万円</b> まで。現在の ${man(reno)}万円 に対し <b>${man(-df)}万円 の超過</b>です。`;
+  $('revTalk').innerHTML=`「いまのお支払いが ${yen(rentAll)}円ですよね。同じくらいですと、この物件で <b>${man(rReno)}万円ぐらいのリノベーション</b>ができます。${rG?`${rG}のイメージです。`:''}」`;}
+
+ /* E */
+ let fb='';
+ FEES.forEach(f=>{const v=F.o[f.k]||0;if(v===0&&f.k==='kagu')return;
+  fb+=`<tr><td>${f.n}</td><td class="n">${yen(v)}円</td><td style="text-align:left;font-size:11.5px;color:var(--mid)">${F.d[f.k]||''}</td></tr>`});
+ fb+=`<tr class="tot"><td>諸費用 合計</td><td class="n">${yen(F.total)}円</td><td style="text-align:left;font-size:11.5px">物件価格＋工事費の約 ${(F.total/(price+reno)*100).toFixed(1)}％</td></tr>`;
+ $('feeBody').innerHTML=fb;
+
+ /* F */
+ const shinsa=3.5,income=numv('income')*1e4;
+ const sPay=pmt(loan,shinsa,n)+uwPay+olAfter,ratio=income>0?sPay*12/income*100:0;
+ const ltv=(price+reno)>0?(loan+uwAmt)/(price+reno)*100:0,finAge=age2+years;
+ const pl=(g,w2,t)=>`<span class="pill ${g?'gd':w2?'wn':'bd'}">${t}</span>`;
+ $('chkBody').innerHTML=`
+  <tr><td>返済負担率 <span style="color:var(--soft);font-size:11px">審査金利${shinsa}％・${years}年</span></td><td class="n">${ratio.toFixed(1)}％</td><td>${pl(ratio<=30,ratio<=35,ratio<=30?'余裕あり':ratio<=35?'上限に近い':'超過')}</td></tr>
+  <tr><td>審査金利での月額</td><td class="n">${yen(sPay)}円</td><td></td></tr>
+  <tr><td>借入比率（物件＋工事に対して）</td><td class="n">${ltv.toFixed(0)}％</td><td>${pl(ltv<=100,ltv<=110,ltv<=100?'標準':ltv<=110?'オーバーローン':'要相談')}</td></tr>
+  <tr><td>完済時年齢 <span style="color:var(--soft);font-size:11px">${B.short}は満${B.maxAge}歳未満</span></td><td class="n">${finAge}歳</td><td>${pl(finAge<B.maxAge-3,finAge<B.maxAge,finAge<B.maxAge-3?'問題なし':finAge<B.maxAge?'上限付近':'上限超')}</td></tr>
+  <tr><td>借入期間 <span style="color:var(--soft);font-size:11px">商品上限${R.prodY}年</span></td><td class="n">${years}年</td><td>${pl(!R.capped,true,R.capped?(R.capBy==='age'?'年齢で頭打ち':'期間上限で頭打ち'):'可')}</td></tr>
+  <tr><td>物件の築年数</td><td class="n">${bt}年</td><td>${pl(bt<20,bt<40,bt<20?'問題なし':bt<40?'期間要確認':'要事前相談')}</td></tr>`;
+ let cm,cc;
+ if(ratio>35){cc='n';cm='返済負担率が審査基準を超える見込みです。自己資金の追加、工事費の圧縮、ペアローン・収入合算などの検討が必要です。';}
+ else if(ratio>30||ltv>110){cc='w';cm='審査基準の上限に近い水準です。事前審査を早めに出すことをお勧めします。';}
+ else{cc='o';cm='一般的な審査基準の範囲内です。';}
+ if(olAfter>0)cm+=`<br>他社ローン ${yen(olAfter)}円/月 を負担率に含めています。${B.uw?'ろうきんの生活資金で借換すると負担率が下がる可能性があります。':''}`;
+ if(uwAmt>0)cm+='<br>※ 生活資金部分は住宅ローン控除の対象外です。';
+ $('chkMsg').className='msg '+cc;$('chkMsg').innerHTML=cm;
+}
+
+/* ===== 比較 ===== */
+function doCompare(){
+ const keys=['hokugin','rokin','rokina','ichigin'];
+ const rows=keys.map(k=>runBank(k,false,null,true));
+ const bad=rows.filter(r=>!r.ready);
+ if(bad.length){alert('比較できません。\n\n'+bad.map(r=>'・'+r.B.short+' の金利が未入力です').join('\n')+'\n\n「金利マスタ」から入力してください。');openRates();return;}
+ const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu'),other=numv('tax')/12;
+ const best=rows.reduce((a,b)=>b.totAll<a.totAll?b:a);
+ $('cmpHead').innerHTML='<tr><th>比較項目</th>'+rows.map(r=>`<th>${r.B.short}${r.bankKey===best.bankKey?' <span class="pill bst">総額最少</span>':''}</th>`).join('')+'</tr>';
+ const line=(lb,f,cls)=>`<tr${cls||''}><td>${lb}</td>${rows.map(r=>`<td class="n">${f(r)}</td>`).join('')}</tr>`;
+ let h='';
+ h+=line('引下げのタイプ',r=>`<span style="font-weight:400;font-size:11.5px">${r.B.plan||'—'}</span>`);
+ h+=line('金利タイプ',r=>`<span style="font-weight:400;font-size:11.5px">${fixLabel(r.fk)}${r.fkSub?'<br><span class="pill wn">この行の扱いに変更</span>':(r.B.newFix.includes(r.fk)?'':'<br><span class="pill bd">新規不可</span>')}</span>`);
+ h+=line('当初適用金利',r=>`<b>${r.r1.toFixed(3)}％</b>`);
+ h+=line('店頭基準金利',r=>r.stTen!=null?r.stTen.toFixed(3)+'％':'—');
+ h+=line('終了後の引下げ幅',r=>r.disc!=null?'−'+r.disc.toFixed(2)+'％':'—');
+ h+=line('終了後の金利',r=>r.fk==='fAll'?'—':`<b>${r.r2.toFixed(3)}％</b>`);
+ h+=line('借入期間',r=>`${r.years}年<br><span style="font-weight:400;font-size:11px;color:var(--soft)">商品${r.prodY}年／満${r.B.maxAge}歳未満</span>`);
+ h+=line('お借入額',r=>man(r.loan+r.uwAmt)+'万円');
+ h+=line('うち 生活資金',r=>r.uwAmt>0?man(r.uwAmt)+'万円':'—');
+ h+=line('取扱手数料',r=>yen(r.F.o.jimu)+'円');
+ h+=line('保証料',r=>r.F.o.hosho>0?yen(r.F.o.hosho)+'円':(r.B.hosho==='inrate'?'<span class="pill wn">金利に含む</span>':'<span class="pill gd">0円</span>'));
+ h+=line('諸費用 合計',r=>man(r.F.total)+'万円');
+ h+=line('当初の月額',r=>`<b>${yen(r.m1+r.uwPay)}円</b>`,' class="hl"');
+ h+=line('終了後の月額',r=>r.fk==='fAll'?'同額':yen(r.m2+r.uwPay)+'円');
+ h+=line('実質月額（維持費込・当初）',r=>yen(r.m1+r.uwPay+keep+other+r.F.o.kasai/60+(r.matome?0:r.olPay))+'円');
+ h+=line('総返済額',r=>man(r.totRepay+r.uwTot)+'万円');
+ if(rows.some(r=>r.olRemain>0)||rows.some(r=>r.matome))
+  h+=line('残る他社ローン',r=>r.olRemain>0?`${man(r.olRemain)}万円<br><span style="font-weight:400;font-size:11px;color:var(--soft)">月 ${yen(r.olPay)}円 継続</span>`:'<span class="pill gd">借換済</span>');
+ h+=`<tr class="tot"><td>総支払額（返済＋自己資金）</td>${rows.map(r=>`<td class="n">${man(r.totAll)}万円${r.bankKey===best.bankKey?'':`<br><span style="font-weight:400;font-size:11px;color:var(--orange-d)">＋${man(r.totAll-best.totAll)}万円</span>`}</td>`).join('')}</tr>`;
+ $('cmpBody').innerHTML=h;
+ const sec=rows.filter(r=>r.bankKey!==best.bankKey).sort((a,b)=>a.totAll-b.totAll)[0];
+ const rk=rows.find(r=>r.bankKey==='rokin'),ra=rows.find(r=>r.bankKey==='rokina');
+ $('cmpMsg').className='msg o';
+ $('cmpMsg').innerHTML=`総支払額が最も少ないのは <b>${best.B.name}</b>。次点の${sec.B.short}との差は <b>${man(sec.totAll-best.totAll)}万円</b>。
+  <br><b>月々ではなく総支払額で比べてください。</b>北陸銀行の保証料0円は金利に含まれているためで、ろうきんの0円とは意味が違います。取扱手数料も北銀・一銀は22万円、ろうきんは19.8万円（生活資金併用で22万円）と差があります。
+  <br>まるっと500（全期間引下げ）の終了後は ${rk.r2.toFixed(3)}％、500α（当初期間引下げ）は ${ra.r2.toFixed(3)}％。<b>500αは当初 ${ra.r1.toFixed(3)}％ から ${(ra.r2-ra.r1).toFixed(2)}％ 上がります。</b>
+  ${rows.some(r=>r.fkSub)?`<br>※ ${rows.filter(r=>r.fkSub).map(r=>r.B.short+'は'+fixLabel(r.fk)).join('・')} で計算しています（${fixLabel(FIXK)}の取扱いがないため）。金利タイプが揃っていない比較である点にご注意ください。`:''}
+  <br>※ 引下げ幅は取引項目の該当状況で変わります。この試算は${DISCMODE==='max'?'最大優遇':'最低優遇'}です。審査結果により実際の条件は変わります。`;
+ $('cmpTalk').innerHTML=`「同じ条件で4つ並べてみました。${best.B.short}が総額 ${man(best.totAll)}万円 でいちばん有利です。ただしこれは取引条件を全部満たした場合の金利ですので、実際にどこまで該当するかで変わります。まずは2行に事前審査を出してみましょう。」`;
+ $('cmpCard').classList.add('on');
+ try{$('cmpCard').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
+}
+
+/* ===== 保存 ===== */
+const IDS=['cname','age','income','job','tenure','rent','rentkanri','rentpark','otherLoan','otherBal','own','gift','price','area','built','tax','kanri','shuzen','jishu','grade','reno','r1','baseR','disc','up','tokuyaku','uwAmt','uwRate','yobiRate','allow'];
+const CHKS=['incFee','incFurniture','uwOn','uwKagu','uwCar','uwEdu','uwMatome','altOn','pairOn'];
+function doSave(){
+ const d={v:5,goal:GOAL,ptype:PTYPE,bank:BANK,fixk:FIXK,afix:AFIX,disc:DISCMODE,inc:{},ck:{}};
+ IDS.forEach(i=>d[i]=$(i).value);CHKS.forEach(i=>d.ck[i]=chk(i));
+ FEES.filter(f=>f.k!=='yobi').forEach(f=>d.inc[f.k]=$('fx_'+f.k).value);
+ const nm=($('cname').value||'資金計画').replace(/[\\/:*?"<>|]/g,'')+'_'+new Date().toISOString().slice(0,10)+'.json';
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,1)],{type:'application/json'}));
+ a.download=nm;a.click();URL.revokeObjectURL(a.href);}
+function doLoad(el){const f=el.files[0];if(!f)return;const r=new FileReader();
+ r.onload=e=>{try{const d=JSON.parse(e.target.result);
+  if(d.goal){GOAL=+d.goal;setSeg('segGoal',GOAL)}
+  if(d.ptype){PTYPE=d.ptype;setSeg('segType',PTYPE);$('mansionOnly').style.display=PTYPE==='mansion'?'grid':'none';$('kodateOnly').style.display=PTYPE==='kodate'?'block':'none'}
+  if(d.bank&&M.banks[d.bank]){BANK=d.bank;setSeg('segBank',BANK)}
+  if(d.fixk)FIXK=d.fixk; if(d.afix)AFIX=d.afix;
+  if(d.disc){DISCMODE=d.disc;setSeg('segDisc',DISCMODE)}
+  onBank();
+  IDS.forEach(i=>{if(d[i]!==undefined)$(i).value=d[i]});
+  if(d.ck)CHKS.forEach(i=>{if(d.ck[i]!==undefined)$(i).checked=d.ck[i]});
+  if(d.inc)FEES.filter(x=>x.k!=='yobi').forEach(x=>{if(d.inc[x.k]!==undefined)$('fx_'+x.k).value=d.inc[x.k]});
+  calc();}catch(err){alert('このファイルは読み込めませんでした。')}el.value=''};r.readAsText(f);}
+function setSeg(id,v){$(id).querySelectorAll('button').forEach(b=>b.classList.toggle('on',String(b.dataset.v)===String(v)))}
+function doReset(){if(confirm('入力内容をすべて消して最初からやり直しますか。（金利マスタは残ります）'))location.reload()}
+function openM(id){$(id).classList.add('on')}
+function closeM(id){$(id).classList.remove('on')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeM('man');closeM('rates')}});
+document.querySelectorAll('input,select').forEach(el=>{if(el.type!=='file'&&!el.closest('#rtTable')){el.addEventListener('input',calc);el.addEventListener('change',calc)}});
+$('area').addEventListener('change',onGrade);
+try{onGrade();onBank();}catch(e){console.error(e);alert('画面の初期化に失敗しました。再読み込みしてください。')}
+</script>
+</body>
+</html>
