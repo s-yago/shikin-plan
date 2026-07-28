@@ -316,17 +316,20 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
     <div class="note" id="fixNote"></div></div>
 
    <div class="sub-blk" style="background:#F7F9FC">
-    <div class="sbt">当初の金利</div>
-    <div class="fld"><label>当初適用金利 <span class="hint">チラシの新規お借入時金利</span></label><div class="unit"><input type="number" id="r1" step="0.001" placeholder="未入力"><span class="u">%</span></div></div>
+    <div class="sbt"><span style="background:var(--navy);color:#fff;padding:1px 8px;border-radius:20px;font-size:10.5px">手入力</span><span>当初の金利（選択型固定期間中）</span></div>
+    <div class="fld"><label>当初適用金利 <span class="hint">チラシの新規お借入時金利をそのまま</span></label><div class="unit"><input type="number" id="r1" step="0.001" placeholder="未入力"><span class="u">%</span></div></div>
+    <div class="note">当初期間は銀行ごとに特別な優遇がついているため、<b>引下げ幅の計算は使いません。</b>チラシに大きく載っている数字をそのまま入力してください。</div>
    </div>
 
    <div class="sub-blk" id="afterBlk" style="background:#FFF9F2">
-    <div class="sbt">特約期間終了後の金利</div>
+    <div class="sbt"><span style="background:var(--orange);color:#fff;padding:1px 8px;border-radius:20px;font-size:10.5px">自動計算</span><span>特約期間終了後の金利</span></div>
+    <div class="note" style="margin:-4px 0 10px">終了後は当初の特別優遇がなくなり、<b>店頭基準金利から引下げ幅を引いた金利</b>になります。ここだけ引下げ幅を使います。</div>
     <div class="fld"><label>店頭基準金利 <span class="hint">終了後に選ぶタイプの店頭金利</span></label><div class="unit"><input type="number" id="baseR" step="0.001" placeholder="未入力"><span class="u">%</span></div></div>
     <div class="fld"><label>終了後に選ぶ金利タイプ</label><select id="afterFix" onchange="onAfterFix()"></select></div>
-    <div class="fld"><label>引下げ幅（優遇）</label>
+    <div class="fld"><label>終了後に適用される引下げ幅 <span class="hint">当初の金利には影響しません</span></label>
      <div class="seg sm" id="segDisc"><button data-v="max" class="on">最大優遇</button><button data-v="min">最低優遇</button></div>
      <div class="unit" style="margin-top:6px"><input type="number" id="disc" step="0.01" placeholder="未設定"><span class="u">%</span></div>
+     <div class="note">商品概要書の値を初期設定しています。取引項目の該当数で変わるため、最大と最低の両方をお客様にお見せしてください。</div>
     </div>
     <div class="fld"><label>店頭金利の想定上昇</label>
      <input type="range" id="up" min="0" max="2" step="0.1" value="0" oninput="calc()">
@@ -474,7 +477,8 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
    <div class="mact"><button onclick="exportRates()">JSON書き出し</button><button onclick="rfi.click()">JSON読込</button><button class="pri" onclick="saveRates()">保存して閉じる</button></div>
    <button class="x" onclick="closeM('rates')">×</button></div>
   <div class="mbd">
-   <div class="msg w" style="margin:0 0 14px"><b>金利欄は毎月更新してください。</b>引下げ幅（優遇幅）は商品概要書の値を初期設定してあります。金利は毎月変わるため空欄です。各行のチラシから当初適用金利と店頭基準金利を入力してください。</div>
+   <div class="msg w" style="margin:0 0 14px"><b>①と②は毎月チラシから手入力してください。</b>③の引下げ幅は商品概要書の値を初期設定してあり、商品改定がなければ触りません。<br>
+   <b>引下げ幅は「特約期間終了後の金利」の計算にのみ使います。</b>当初の金利は銀行ごとに特別な優遇がついているため、チラシの数字をそのまま①に入力してください。</div>
    <div class="sub-blk" style="margin:0 0 16px;background:#F2F7FF;border-color:#B9CDE8">
     <div class="sbt">スタッフ全員で金利を共有する（Googleスプレッドシート連携）</div>
     <div class="fld"><label>スプレッドシートのURL</label><input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/... を貼り付け">
@@ -507,7 +511,9 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
   <div class="mbd">
    <h4>このツールの金利の考え方</h4>
    <p>各行の商品概要書を読み込んで作ってあります。金利は次の式で計算します。</p>
-   <p style="background:var(--tint);padding:10px 12px;border-radius:6px"><b>特約期間終了後の金利 ＝ 店頭基準金利 ＋ 想定上昇 − 引下げ幅</b></p>
+   <p style="background:var(--tint);padding:10px 12px;border-radius:6px"><b>当初の金利　＝ チラシの新規お借入時金利をそのまま手入力</b><br>
+   <b>特約期間終了後の金利 ＝ 店頭基準金利 ＋ 想定上昇 − 引下げ幅</b></p>
+   <p><b>引下げ幅を使うのは終了後だけです。</b>当初期間は銀行ごとに特別な優遇がついていて、通常の引下げ幅では計算できません。北陸銀行の2年固定0.55％は店頭2.700％から2.15％も引いた数字で、終了後の引下げ幅1.7％では出てきません。だから当初は手入力にしています。</p>
    <p>この式は各行のチラシの数字で検算済みです。たとえば富山第一銀行の2年固定は、店頭表示2.40％ − 最大引下げ1.30％ ＝ 1.10％となり、チラシの「最大引下げ後金利 年1.10％」と一致します。まるっと500の3年固定も、通常2.40％ − 1.35％ ＝ 1.05％で、チラシの新規適用金利の下限と一致します。</p>
    <p><b>引下げ幅（優遇幅）は商品概要書の値をあらかじめ入れてあります。</b>ここはあまり変わりません。毎月入れ替えるのは金利だけです。</p>
 
@@ -841,11 +847,11 @@ function buildRateTable(){
  const bs=Object.keys(M.banks);
  let h='<tr><th style="width:186px"></th>'+bs.map(b=>`<th class="bk">${M.banks[b].short}</th>`).join('')+'</tr>';
  const cell=(b,f,v,ph,tp)=>`<td><input type="${tp||'number'}" step="0.001" data-b="${b}" data-f="${f}" value="${v??''}"${ph?` placeholder="${ph}"`:''}></td>`;
- h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">当初適用金利（毎月チラシから入力）</th></tr>`;
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">① 当初適用金利（毎月チラシから手入力・引下げ幅は使いません）</th></tr>`;
  FIXDEF.forEach(([k,lb])=>{h+=`<tr><td class="lb">${lb} <span style="color:var(--soft)">%</span></td>`+bs.map(b=>M.banks[b].availFix.includes(k)?cell(b,'r_'+k,M.banks[b].rates[k],'要入力'):'<td style="background:#F7F8FA"></td>').join('')+'</tr>';});
- h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">店頭基準金利（毎月チラシから入力・終了後の計算に使用）</th></tr>`;
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">② 店頭基準金利（毎月チラシから手入力・終了後の計算に使用）</th></tr>`;
  FIXDEF.forEach(([k,lb])=>{h+=`<tr><td class="lb">${lb} <span style="color:var(--soft)">%</span></td>`+bs.map(b=>M.banks[b].availFix.includes(k)?cell(b,'b_'+k,M.banks[b].base[k],'要入力'):'<td style="background:#F7F8FA"></td>').join('')+'</tr>';});
- h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">引下げ幅・条件（商品概要書の値・変更は稀）</th></tr>`;
+ h+=`<tr><th class="bk" colspan="${bs.length+1}" style="text-align:left;padding-left:8px">③ 特約期間終了後の引下げ幅・その他条件（商品概要書の値・変更は稀）</th></tr>`;
  const row=(lb,f,ph)=>{h+=`<tr><td class="lb">${lb}</td>`+bs.map(b=>cell(b,f,M.banks[b][f],ph)).join('')+'</tr>';};
  row('終了後 引下げ幅（最大） <span style="color:var(--soft)">%</span>','discMax','要確認');
  row('終了後 引下げ幅（最低） <span style="color:var(--soft)">%</span>','discMin','要確認');
