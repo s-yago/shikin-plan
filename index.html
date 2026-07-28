@@ -96,6 +96,8 @@ input.miss{background:#FBECEA;border-color:#DFA098}
 .pay .sub{font-size:11px;color:#8FA0BE;margin-top:3px;line-height:1.55}
 .arrowc{text-align:center;color:var(--orange);font-size:12px;font-weight:700;line-height:1.3}
 .arrowc .big{font-size:22px;display:block}
+#heroNote{font-size:11.5px;color:#A9B6CE;line-height:1.65;margin-top:12px;padding-top:11px;border-top:1px solid #3B517A}
+#heroNote b{color:#F0C79A;font-weight:500}
 @media(max-width:520px){.arrowc .big{transform:rotate(90deg)}}
 
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:14px}
@@ -281,11 +283,23 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
     <select id="grade" onchange="onGrade()">
      <option value="a">A｜水回り4点交換のみ</option><option value="b">B｜水回り＋内装（クロス・床）</option>
      <option value="c" selected>C｜部分リノベ（間取り変更なし・フル内装＋水回り）</option>
-     <option value="d">D｜フルリノベ（スケルトン・間取り変更あり）</option><option value="x">X｜見積ツールの金額を直接入力</option>
+     <option value="d">D｜フルリノベ（スケルトン・間取り変更あり）</option><option value="x">X｜見積ツールの金額を直接入力（予備費込み）</option>
     </select></div>
    <div class="fld"><label>工事費（税込）</label><div class="unit"><input type="number" id="reno" value="780"><span class="u">万円</span></div>
     <div class="note" id="renoNote"></div></div>
-   <div class="fld"><label class="chk"><input type="checkbox" id="incFurniture" checked>家具・家電・カーテン費用を諸費用に含める</label></div>
+   <div class="sub-blk" id="yobiBlk">
+    <div class="sbt">予備費</div>
+    <div class="fld"><label>工事費に対して</label><div class="unit"><input type="number" id="yobiRate" value="30" step="1"><span class="u">%</span></div></div>
+    <div class="note" id="yobiCalc"></div>
+    <div class="note">中古は解体後に想定外が出やすいため、初回のご提案では厚めに見込みます。実際にかからなければ繰上返済に回していただけます。</div>
+   </div>
+   <div id="yobiXBlk" style="display:none">
+    <div class="msg" style="margin:11px 0 0;padding:9px 12px;font-size:12px;background:var(--tint);border:1px solid var(--line);color:var(--mid)">
+     見積ツールの金額には予備費が含まれているため、<b>こちらでは加算しません。</b>
+     <label class="chk" style="margin-top:6px"><input type="checkbox" id="yobiForce" onchange="calc()">この見積には予備費が入っていないので加算する</label>
+    </div>
+   </div>
+   <div class="fld" style="margin-top:11px"><label class="chk"><input type="checkbox" id="incFurniture" checked>家具・家電・カーテン費用を諸費用に含める</label></div>
   </div>
  </div>
 
@@ -356,7 +370,7 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
   <div class="cbd">
    <div class="note" style="margin-bottom:10px">お借入先の条件に応じた自動計算値が入ります。実額が分かった項目は上書きしてください。空欄に戻すと自動計算に戻ります。</div>
    <div id="feeInputs"></div>
-   <div class="fld" style="margin-top:11px"><label>予備費の率</label><div class="unit"><input type="number" id="yobiRate" value="3" step="0.5"><span class="u">%</span></div></div>
+   <div class="note" id="yobiRef" style="margin-top:11px"></div>
   </div>
  </div>
 </div>
@@ -372,6 +386,7 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
    <div class="arrowc"><span class="big">→</span><span id="diffTop"></span></div>
    <div class="pay up"><div class="cap" id="cap2">終了後</div><div class="amt num"><span id="pay2">—</span><small>円</small></div><div class="sub num" id="sub2"></div></div>
   </div>
+  <div id="heroNote"></div>
  </div>
 
  <div class="kpis">
@@ -447,6 +462,7 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
 <div class="mbar noprint"><div><div class="m1">当初 / 終了後の月額（総額）</div><div class="m2"><span id="mb1">—</span> → <span id="mb2" style="color:#F4B678">—</span></div></div></div>
 
 <footer>
+ <b>特約期間終了後の金利は、本書作成時点の店頭基準金利をもとに算出した参考値です。</b>実際に適用される金利は特約期間が終了する時点の金利情勢により変動し、記載の金額をお約束するものではありません。<br>
  本シミュレーションは概算であり、実際の融資条件・諸費用・税額をお約束するものではありません。金利・引下げ幅・手数料・特約の上乗せ率・借入可能期間・年齢条件は、各金融機関の商品改定および審査結果により変動します。<br>
  引下げ幅は取引項目の該当状況により変わり、返済の遅延等があった場合には適用されないことがあります。各条件は必ず最新の商品概要説明書でご確認ください。<br>
  ViVi不動産株式会社
@@ -588,6 +604,24 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
    </ul>
    <p>本格的な借換の試算が必要になったら、別途ツールに組み込みますのでお知らせください。</p>
 
+   <h4>予備費の考え方</h4>
+   <p>初期設定は<b>「工事費のみ × 30％」</b>です。フルリノベ見積ツールと同じ考え方に合わせてあります。工事費780万円なら234万円が資金計画に乗ります。</p>
+   <p>中古は解体してみないと分からない部分が多く、初回のご提案で薄く見ておくと、後から「追加でこれだけかかります」となってお客様の信頼を失います。<b>厚めに見ておいて、実際にかからなければ繰上返済に回していただく</b>という説明のほうが安全です。</p>
+   <p>基準は3つから選べます。切り替えると率も自動で変わります。</p>
+   <ul>
+    <li><b>工事費のみ</b>（初期設定・30％）／見積ツールと同じ考え方。通常はこれ。</li>
+    <li><b>物件＋工事費</b>（3％）／諸費用全体のブレだけを見込む考え方。予備費を薄くしたいとき。</li>
+    <li><b>計上しない</b>／見積にすでに予備費が入っている場合。</li>
+   </ul>
+   <p><b>グレードの選び方で自動的に切り替わります。</b>操作は要りません。</p>
+   <ul>
+    <li><b>グレードA〜Dを選んだとき</b>／予備費の欄が出ます。初期値は工事費の30％です。お客様や物件の状態に応じて率を変えてください。</li>
+    <li><b>グレードXを選んだとき</b>（見積ツールの金額を直接入力）／見積にすでに予備費が入っている前提で、<b>予備費を加算しません。</b>欄も消えます。</li>
+   </ul>
+   <p>まれに、予備費を含まない見積を持ってくる場合があります。そのときはXの案内に出る<b>「この見積には予備費が入っていないので加算する」</b>にチェックを入れてください。欄が出て30％が加算されます。</p>
+   <p>予備費は「D いくらのリノベができるか」の逆算にも連動します。工事費が動くと予備費もその率で動く循環計算になりますが、自動で収束します。</p>
+   <p>予備費は「D いくらのリノベができるか」の逆算にも連動します。工事費が動くと予備費もその30％で動く循環計算になりますが、自動で収束します。</p>
+
    <h4>やってはいけないこと</h4>
    <ul>
     <li>赤い警告が出ている状態で金額をお客様に提示しない。</li>
@@ -614,6 +648,7 @@ const FIXDEF=[['f0','変動',0],['f2','2年固定',2],['f3','3年固定',3],['f5
 const fixYears=k=>(FIXDEF.find(x=>x[0]===k)||[,,0])[2];
 const fixLabel=k=>(FIXDEF.find(x=>x[0]===k)||[,'—'])[1];
 const emptyR=()=>({f0:null,f2:null,f3:null,f5:null,f10:null,f15:null,f20:null,fAll:null});
+const jpDate=d=>{const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(d||'');return m?`${m[1]}年${+m[2]}月${+m[3]}日`:(d||'現在');};
 
 /* ===== マスタ：金利は空欄／引下げ幅は商品概要書の値 ===== */
 const BASE={date:'',banks:{
@@ -710,7 +745,7 @@ function applySheet(rows){
    if(raw!==''&&isNaN(v))return;
    if(key.startsWith('r_'))B.rates[key.slice(2)]=v;
    else if(key.startsWith('b_'))B.base[key.slice(2)]=v;
-   else B[key]=v;
+   else if(raw!=='')B[key]=v;
    if(raw!=='')n++;});});
  return n;}
 function loadSheet(silent){
@@ -727,11 +762,24 @@ function loadSheet(silent){
    try{localStorage.setItem('vivi_sheet',raw);localStorage.setItem('vivi_rates_v5',JSON.stringify(M));}catch(e){}
    if($('rtTable').innerHTML)buildRateTable();
    onBank();
-   if(!silent)setSheetMsg(`読み込みました（${n}件）。金利の確認日：${M.date||'未設定'}`,'o');
+   if(!silent)setSheetMsg(`読み込みました（${n}件）。金利の確認日：${M.date||'未設定'}<br>${auditRates()}`,'o');
    return true;})
   .catch(e=>{SHEETSRC.ok=false;SHEETSRC.err=e.message;SHEETSRC.url=raw;
    if(!silent)setSheetMsg('読み込めませんでした：'+e.message,'n');
    updateSrcBar();return false;});}
+function auditRates(){
+ const ok=[],half=[];
+ Object.keys(M.banks).forEach(k=>{const B=M.banks[k];if(k==='other')return;
+  const rdy=B.availFix.filter(f=>B.rates[f]!=null&&(f==='fAll'||(B.base[f]!=null&&B.discMax!=null)));
+  const hf=B.availFix.filter(f=>B.rates[f]!=null&&rdy.indexOf(f)<0);
+  if(rdy.length)ok.push(`${B.short}：${rdy.map(fixLabel).join('・')}`);
+  if(hf.length)half.push(`${B.short}：${hf.map(fixLabel).join('・')}`);});
+ let h='';
+ if(ok.length)h+=`<div style="color:var(--ok-tx);margin-top:6px">そのまま使える組み合わせ<br>・${ok.join('<br>・')}</div>`;
+ if(half.length)h+=`<div style="color:var(--warn-tx);margin-top:6px">当初の金利だけ入っています（選択型固定金利 終了後の金利が未入力）<br>・${half.join('<br>・')}</div>`;
+ if(!ok.length&&!half.length)h+=`<div style="color:var(--soft);margin-top:6px">金利がまだ入っていません。</div>`;
+ h+=`<div style="color:var(--soft);margin-top:6px;font-size:11px">入れていない銀行・金利タイプはそのままで構いません。選んだときだけ画面上部でお知らせします。</div>`;
+ return h;}
 function setSheetMsg(t,lv){const e=$('sheetMsg');if(!e)return;
  e.innerHTML=t;e.style.color=lv==='n'?'var(--ng-tx)':lv==='o'?'var(--ok-tx)':'var(--soft)';}
 function saveSheetUrl(){const v=$('sheetUrl').value.trim();
@@ -832,7 +880,7 @@ function importRates(el){const f=el.files[0];if(!f)return;const r=new FileReader
   catch(err){alert('このファイルは読み込めませんでした。')}el.value=''};r.readAsText(f);}
 function openRates(){buildRateTable();
  if($('sheetUrl'))$('sheetUrl').value=SHEETSRC.url||'';
- if(SHEETSRC.ok)setSheetMsg(`連携中です（${SHEETSRC.at} 更新）。金利はスプレッドシートの値が優先されます。`,'o');
+ if(SHEETSRC.ok)setSheetMsg(`連携中です（${SHEETSRC.at} 更新）。金利はスプレッドシートの値が優先されます。<br>${auditRates()}`,'o');
  else if(SHEETSRC.err)setSheetMsg('読み込めませんでした：'+SHEETSRC.err,'n');
  openM('rates');}
 
@@ -882,7 +930,7 @@ function onBank(){
  calc();
 }
 function onGrade(){const g=$('grade').value;
- if(g==='x'){$('renoNote').textContent='見積ツールで算出した税込金額を入力してください。';calc();return;}
+ if(g==='x'){$('renoNote').innerHTML='見積ツールで算出した金額をそのまま入力してください。';calc();return;}
  const u=UNIT[PTYPE][g],a=numv('area');
  $('reno').value=Math.round(a*u/10000/10)*10;
  $('renoNote').textContent=`${GNAME[g]}／目安単価 ${(u/10000).toFixed(1)}万円 × ${a}㎡ の概算です。上書きできます。`;calc();}
@@ -911,7 +959,9 @@ function calcFees(price,reno,loan,years,bankKey,useOv,uwOn){
  o.kagu=chk('incFurniture')?500000:0;d.kagu=chk('incFurniture')?'新生活の初期費用の目安':'含めない設定';
  if(useOv)FEES.filter(f=>f.k!=='yobi').forEach(f=>{const el=$('fx_'+f.k);if(el&&el.value!==''){o[f.k]=parseFloat(el.value)||0;d[f.k]='手入力';}});
  let sub=0;FEES.filter(f=>f.k!=='yobi').forEach(f=>sub+=o[f.k]||0);
- o.yobi=(price+reno)*(numv('yobiRate')/100);d.yobi=`（物件価格＋工事費）×${numv('yobiRate')}％`;
+ const yr=numv('yobiRate'),gx=$('grade').value==='x',yon=(!gx||chk('yobiForce'))&&yr>0;
+ if(!yon){o.yobi=0;d.yobi=gx?'見積ツールの金額に予備費が含まれるため加算なし':'計上しない設定（0％）';}
+ else {o.yobi=reno*yr/100;d.yobi=`工事費 ${man(reno)}万円 × ${yr}％`;}
  return {o,d,total:sub+o.yobi};
 }
 
@@ -969,6 +1019,8 @@ function runBank(bk,useOv,discMode,fallback){
  return {B,bankKey:bk,fk,fkSub,ak,years,n,maxY,prodY,ageY,capped,capBy,fixN,r1,r2,rBase,stTen,disc:dRaw,upv,
   tkAdd,tkName,tkNA,loan,need,F,m1,m2,uwOn,uwAmt,uwR,uwPay,uwTot,matome,olPay,olRemain,
   price,reno,own,cashOut,totRepay,totAll:totRepay+uwTot+cashOut+olRemain,
+  readyInit:rBase!=null,
+  readyAfter:rBase!=null&&(fk==='fAll'||(stTen!=null&&dRaw!=null)),
   ready:rBase!=null&&(fk==='fAll'||(stTen!=null&&dRaw!=null))};
 }
 
@@ -976,7 +1028,8 @@ function runBank(bk,useOv,discMode,fallback){
 function rules(R){
  const B=R.B,age=numv('age'),out=[],fin=age+R.years;
  const add=(lv,t)=>out.push({lv,t});
- if(!R.ready)add('n','金利が未入力です。金利マスタから当初適用金利と店頭基準金利を入力してください。');
+ if(!R.readyInit)add('n',`${B.short}の${fixLabel(R.fk)}は当初適用金利が未入力です。金利マスタで入力するか、別の金利タイプをお選びください。`);
+ else if(!R.readyAfter)add('n',`<b>選択型固定金利 終了後の金利が入っていません。</b>当初の金額しか出せません。この状態でお客様に提示しないでください。`);
  if(age<(B.applyMin||18))add('n',`申込時年齢は満${B.applyMin}歳以上が条件です。`);
  if(B.applyMax<99&&age>=B.applyMax)add('n',`${B.short}の申込時年齢は満${B.applyMax}歳未満が条件です。現在${age}歳のため対象外の可能性があります。`);
  if(fin>=B.maxAge)add('n',`完済時年齢が${fin}歳となり、${B.short}の条件「満${B.maxAge}歳未満」を超えます。期間の短縮が必要です。`);
@@ -988,6 +1041,8 @@ function rules(R){
  if(B.minTenure&&numv('tenure')<B.minTenure)add('w',`${B.short}は原則勤続${B.minTenure}年以上が条件です。`);
  if(B.kyuyoOnly&&$('job').value!=='kyuyo')
   add('n',`保証料不要型の「プライム住宅ローン」は<b>給与所得者（会社役員を除く）</b>が対象です。${$('job').value==='yakuin'?'会社役員':'自営業'}のお客様は保証付タイプとなり、<b>保証料の一括前払いと保証会社手数料（33,000〜55,000円）が別途必要</b>です。保証会社によって完済時年齢の条件も変わります（かんそうしん満85歳未満／全国保証は満80歳未満かつ年収400万円以上）。`);
+ if($('grade').value==='x'&&chk('yobiForce'))add('w',`見積ツールから入力した工事費に、予備費${numv('yobiRate')}％を追加で加算しています。見積にすでに予備費が含まれている場合は二重計上になります。`);
+ if($('grade').value!=='x'&&numv('yobiRate')<=0)add('w',`予備費を0％にしています。中古は解体後の想定外が出やすいため、初回のご提案では見込んでおくことをお勧めします。`);
  if(B.pairNote&&chk('pairOn'))add('n',`<b>夫婦連生保障付の税務上の注意：</b>別途金利の上乗せがあります（率は金融機関にご確認ください）。また団信の保険金でローンが完済された場合、<b>相手方の住宅ローンが免除される部分が一時所得とみなされ、所得税の課税対象となる場合があります。</b>お客様には税務署へのご確認をご案内してください。`);
  if(B.hosho==='inrate')add('i',`保証料0円と表示されますが、これは<b>お借入金利に含まれている</b>ためです。「保証料がかからない」という説明は誤解を招きます。`);
  if(B.hosho==='none')add('o',`保証料は${B.short==='一銀'?'不要':'0円（金融機関負担）'}です。金利にも含まれていません。`);
@@ -1036,6 +1091,19 @@ function calc(){
  }
  $('builtWarn').innerHTML=bw;
 
+ /* 予備費 */
+ (function(){
+  const yr=numv('yobiRate'),gx=$('grade').value==='x';
+  $('yobiBlk').style.display=(!gx||chk('yobiForce'))?'block':'none';
+  $('yobiXBlk').style.display=gx?'block':'none';
+  $('yobiCalc').innerHTML=F.o.yobi>0
+   ?`工事費 ${man(reno)}万円 × ${yr}％ ＝ <b>${man(F.o.yobi)}万円</b>　→ 工事関連の合計 <b>${man(reno+F.o.yobi)}万円</b>`
+   :'予備費を加算していません。';
+  $('yobiRef').innerHTML=F.o.yobi>0
+   ?`予備費 <b>${man(F.o.yobi)}万円</b> は「3 リノベーション」で設定します（工事費の${yr}％）。`
+   :`予備費は加算していません。${gx?'見積ツールの金額に含まれている前提です。':''}変更は「3 リノベーション」で行います。`;
+ })();
+
  /* 生活資金 */
  if(B.uw&&chk('uwOn')){
   const lim=B.uwMax||500,amt=numv('uwAmt');
@@ -1060,12 +1128,13 @@ function calc(){
  let stale=false,days=null;
  if(M.date){days=Math.floor((Date.now()-new Date(M.date).getTime())/86400000);stale=days>45;}
  const bar=$('rateBar');
- if(!R.ready){bar.className='on';bar.innerHTML='<b>金利が未入力です。</b>各行のチラシから当初適用金利と店頭基準金利を入力してください。<button onclick="openRates()">金利マスタを開く</button>';}
+ if(!R.readyInit){bar.className='on';bar.innerHTML=`<b>${B.short}の${fixLabel(R.fk)}は金利が入っていません。</b>金利マスタで当初適用金利を入力するか、別の金利タイプをお選びください。<button onclick="openRates()">金利マスタを開く</button>`;}
+ else if(!R.readyAfter){bar.className='on stale';bar.innerHTML=`<b>選択型固定金利 終了後の金利が入っていません。</b>当初の金額のみ表示しています。<button onclick="openRates()">金利マスタを開く</button>`;}
  else if(!M.date){bar.className='on stale';bar.innerHTML='<b>金利の確認日が未記録です。</b><button onclick="openRates()">金利マスタを開く</button>';}
  else if(stale){bar.className='on stale';bar.innerHTML=`<b>金利の確認から ${days}日 経過しています。</b>提示前に最新金利をご確認ください。<button onclick="openRates()">金利マスタを開く</button>`;}
  else bar.className='';
- const ok=R.ready;
- $('printWarn').className=(!ok||!M.date||stale)?'on':'';
+ const ok=R.readyInit,okA=R.readyAfter;
+ $('printWarn').className=(!okA||!M.date||stale)?'on':'';
  $('rtStamp').textContent=(M.date?`金利 ${M.date} 時点`:'金利 未確認')+(SHEETSRC.ok?'・シート連携':'');
  updateSrcBar();
 
@@ -1074,15 +1143,25 @@ function calc(){
  $('heroBank').textContent=B.short;
  $('heroFix').textContent=fl+(R.tkAdd?`・${R.tkName}`:'')+`・${DISCMODE==='max'?'最大優遇':'最低優遇'}`;
  $('cap1').textContent=R.fk==='fAll'?`全期間（${r1.toFixed(3)}％）`:R.fk==='f0'?`変動（${r1.toFixed(3)}％）`:`当初${fixYears(R.fk)}年間（${r1.toFixed(3)}％）`;
- $('cap2').textContent=R.fk==='fAll'?'完済まで変わりません':`${R.fk==='f0'?'金利上昇後':fixYears(R.fk)+'年目以降'}（${r2.toFixed(3)}％）`;
- $('pay1').textContent=ok?yen(m1+uwPay):'—';$('pay2').textContent=ok?yen(m2+uwPay):'—';
+ $('cap2').textContent=!okA?'終了後の金利が未入力です':(R.fk==='fAll'?'完済まで変わりません':`${R.fk==='f0'?'金利上昇後':fixYears(R.fk)+'年目以降'}（${r2.toFixed(3)}％）`);
+ $('diffTop').style.visibility=okA?'visible':'hidden';
+ (function(){
+  const dt=jpDate(M.date);
+  let hn;
+  if(!okA)hn='<b>選択型固定金利 終了後の金利が入っていません。</b>当初の金額のみ表示しています。';
+  else if(R.fk==='fAll')hn=`全期間固定のため、完済まで返済額は変わりません。（${dt}時点の金利）`;
+  else if(R.fk==='f0')hn=`<b>この金利は${dt}時点のものです。</b>変動金利のため、金利情勢により見直されます。将来の返済額をお約束するものではありません。`;
+  else hn=`<b>特約終了後の金利は${dt}時点のものです。</b>現在の店頭基準金利をもとに計算した参考値であり、実際に適用される金利は<b>${fixYears(R.fk)}年後の特約期間終了時点の金利情勢により変わります。</b>上がることも下がることもあります。`;
+  $('heroNote').innerHTML='※ '+hn;
+ })();
+ $('pay1').textContent=ok?yen(m1+uwPay):'—';$('pay2').textContent=okA?yen(m2+uwPay):'—';
  const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu');
  const other=numv('tax')/12+F.o.kasai/60;
  const olAfter=matome?0:olPay;
  $('sub1').innerHTML=(uwAmt>0?`住宅 ${yen(m1)} ＋ 生活 ${yen(uwPay)}<br>`:'')+'＋ 維持費 '+yen(keep+other)+'円';
  $('sub2').innerHTML=(uwAmt>0?`住宅 ${yen(m2)} ＋ 生活 ${yen(uwPay)}<br>`:'')+'＋ 維持費 '+yen(keep+other)+'円';
  $('diffTop').textContent=(m2-m1)<1?'変わりません':'月 ＋'+yen(m2-m1)+'円';
- $('mb1').textContent=ok?yen(m1+uwPay):'—';$('mb2').textContent=ok?yen(m2+uwPay):'—';
+ $('mb1').textContent=ok?yen(m1+uwPay):'—';$('mb2').textContent=okA?yen(m2+uwPay):'—';
  $('fyLbl').textContent=(R.fk!=='fAll'&&R.fk!=='f0')?fixYears(R.fk)+'年間':'';
  $('kTotal').innerHTML=man(need)+'<small>万</small>';$('kOwn').innerHTML=man(R.cashOut)+'<small>万</small>';
  $('kLoan').innerHTML=man(loan+uwAmt)+'<small>万</small>';$('kYear').innerHTML=years+'<small>年</small>';
@@ -1107,7 +1186,12 @@ function calc(){
  $('rentMsg').className='msg '+rc;$('rentMsg').innerHTML=rm;
 
  /* B：最大優遇／最低優遇 × 店頭上昇 */
- if(R.fk==='fAll'){
+ if(!okA){
+  $('scnBody').innerHTML=`<tr><td colspan="6" style="text-align:left;color:var(--soft);padding:14px">${B.short}の${fixLabel(R.ak)}は、選択型固定金利 終了後の金利が入っていないため試算できません。</td></tr>`;
+  $('scnMsg').className='msg n';
+  $('scnMsg').innerHTML=`<b>選択型固定金利 終了後の金利が入っていません。</b>当初の金額しか出ていない状態です。この状態でお客様に提示しないでください。`;
+  $('scnTalk').innerHTML='（店頭基準金利を入力すると説明文が表示されます）';
+ }else if(R.fk==='fAll'){
   $('scnBody').innerHTML=`<tr><td>全期間固定</td><td class="n">—</td><td class="n">—</td><td class="n">${r1.toFixed(3)}％</td><td class="n">${yen(m1)}円</td><td class="n">—</td></tr>`;
   $('scnMsg').className='msg o';$('scnMsg').innerHTML='<b>全期間固定のため、完済まで返済額は変わりません。</b>金利上昇リスクはありませんが、その分だけ当初金利は高めです。';
   $('scnTalk').innerHTML=`「全期間固定ですので、${years}年間ずっと ${yen(m1+uwPay)}円 のままです。」`;
@@ -1128,7 +1212,8 @@ function calc(){
    $('scnMsg').innerHTML=`<b>${B.name}は全期間引下げ型です。</b>引下げ幅は完済まで続きますが、店頭基準金利そのものが上がれば返済額は上がります。上の表で店頭が0.5％・1.0％上がった場合をご確認ください。`;}
   else{$('scnMsg').className='msg w';
    $('scnMsg').innerHTML=`<b>特約期間終了後は金利が見直されます。</b>${BANK==='hokugin'?'北陸銀行は店頭基準金利から年1.3％〜1.7％の引下げですが、取引状況や直近1年以内の返済遅延により引下げ幅が変わります。':''}変動金利の「5年ルール」「125％ルール」は固定期間選択型には適用されないのが一般的です。`;}
-  $('scnTalk').innerHTML=`「当初${fixYears(R.fk)||''}${R.fk==='f0'?'':'年'}は ${yen(m1+uwPay)}円です。${fixYears(R.fk)?fixYears(R.fk)+'年後':'金利が上がると'}、店頭基準 ${R.stTen!=null?R.stTen.toFixed(2)+'％':'—'} から ${R.disc!=null?R.disc.toFixed(2)+'％':'—'} 引いた ${r2.toFixed(2)}％ になり、月 ${yen(m2+uwPay)}円 になります。<b>月 ${yen(m2-m1)}円、年間 ${yen((m2-m1)*12)}円</b> の差です。取引条件を満たせない場合はもう少し上がります。この金額でも大丈夫か、いま一緒に確認させてください。」`;
+  $('scnMsg').innerHTML+=`<br><b>なお、この表の金利は${jpDate(M.date)}時点の店頭基準金利をもとにした試算です。</b>実際に適用されるのは特約期間が終了する時点の金利ですので、上がることも下がることもあります。その前提でご説明ください。`;
+  $('scnTalk').innerHTML=`「当初${fixYears(R.fk)||''}${R.fk==='f0'?'':'年'}は ${yen(m1+uwPay)}円です。${fixYears(R.fk)?fixYears(R.fk)+'年後':'金利が上がると'}、店頭基準 ${R.stTen!=null?R.stTen.toFixed(2)+'％':'—'} から ${R.disc!=null?R.disc.toFixed(2)+'％':'—'} 引いた ${r2.toFixed(2)}％ になり、月 ${yen(m2+uwPay)}円 になります。<b>月 ${yen(m2-m1)}円、年間 ${yen((m2-m1)*12)}円</b> の差です。取引条件を満たせない場合はもう少し上がります。この金額でも大丈夫か、いま一緒に確認させてください。<b>なお、この${yen(m2+uwPay)}円というのは今の金利で計算した数字です。実際に${fixYears(R.fk)||''}年後にどうなるかは、そのときの金利次第で上下します。</b>」`;
  }
 
  /* C */
@@ -1211,9 +1296,10 @@ function calc(){
 /* ===== 比較 ===== */
 function doCompare(){
  const keys=['hokugin','rokin','rokina','ichigin'];
- const rows=keys.map(k=>runBank(k,false,null,true));
- const bad=rows.filter(r=>!r.ready);
- if(bad.length){alert('比較できません。\n\n'+bad.map(r=>'・'+r.B.short+' の金利が未入力です').join('\n')+'\n\n「金利マスタ」から入力してください。');openRates();return;}
+ let rows=keys.map(k=>runBank(k,false,null,true));
+ const skipped=rows.filter(r=>!r.ready).map(r=>r.B.short);
+ rows=rows.filter(r=>r.ready);
+ if(rows.length<2){alert('比較できません。\n\n金利がそろっている商品が'+rows.length+'件しかありません。\n2つ以上の商品に当初適用金利と店頭基準金利を入力してください。');openRates();return;}
  const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu'),other=numv('tax')/12;
  const best=rows.reduce((a,b)=>b.totAll<a.totAll?b:a);
  $('cmpHead').innerHTML='<tr><th>比較項目</th>'+rows.map(r=>`<th>${r.B.short}${r.bankKey===best.bankKey?' <span class="pill bst">総額最少</span>':''}</th>`).join('')+'</tr>';
@@ -1245,6 +1331,7 @@ function doCompare(){
  $('cmpMsg').innerHTML=`総支払額が最も少ないのは <b>${best.B.name}</b>。次点の${sec.B.short}との差は <b>${man(sec.totAll-best.totAll)}万円</b>。
   <br><b>月々ではなく総支払額で比べてください。</b>北陸銀行の保証料0円は金利に含まれているためで、ろうきんの0円とは意味が違います。取扱手数料も北銀・一銀は22万円、ろうきんは19.8万円（生活資金併用で22万円）と差があります。
   <br>まるっと500（全期間引下げ）の終了後は ${rk.r2.toFixed(3)}％、500α（当初期間引下げ）は ${ra.r2.toFixed(3)}％。<b>500αは当初 ${ra.r1.toFixed(3)}％ から ${(ra.r2-ra.r1).toFixed(2)}％ 上がります。</b>
+  ${skipped.length?`<br>※ ${skipped.join('・')} は金利が未入力のため比較に含めていません。`:''}
   ${rows.some(r=>r.fkSub)?`<br>※ ${rows.filter(r=>r.fkSub).map(r=>r.B.short+'は'+fixLabel(r.fk)).join('・')} で計算しています（${fixLabel(FIXK)}の取扱いがないため）。金利タイプが揃っていない比較である点にご注意ください。`:''}
   <br>※ 引下げ幅は取引項目の該当状況で変わります。この試算は${DISCMODE==='max'?'最大優遇':'最低優遇'}です。審査結果により実際の条件は変わります。`;
  $('cmpTalk').innerHTML=`「同じ条件で4つ並べてみました。${best.B.short}が総額 ${man(best.totAll)}万円 でいちばん有利です。ただしこれは取引条件を全部満たした場合の金利ですので、実際にどこまで該当するかで変わります。まずは2行に事前審査を出してみましょう。」`;
@@ -1254,9 +1341,9 @@ function doCompare(){
 
 /* ===== 保存 ===== */
 const IDS=['cname','age','income','job','tenure','rent','rentkanri','rentpark','otherLoan','otherBal','own','gift','price','area','built','tax','kanri','shuzen','jishu','grade','reno','r1','baseR','disc','up','tokuyaku','uwAmt','uwRate','yobiRate','allow'];
-const CHKS=['incFee','incFurniture','uwOn','uwKagu','uwCar','uwEdu','uwMatome','altOn','pairOn'];
+const CHKS=['incFee','incFurniture','uwOn','uwKagu','uwCar','uwEdu','uwMatome','altOn','pairOn','yobiForce'];
 function doSave(){
- const d={v:5,goal:GOAL,ptype:PTYPE,bank:BANK,fixk:FIXK,afix:AFIX,disc:DISCMODE,inc:{},ck:{}};
+ const d={v:7,goal:GOAL,ptype:PTYPE,bank:BANK,fixk:FIXK,afix:AFIX,disc:DISCMODE,inc:{},ck:{}};
  IDS.forEach(i=>d[i]=$(i).value);CHKS.forEach(i=>d.ck[i]=chk(i));
  FEES.filter(f=>f.k!=='yobi').forEach(f=>d.inc[f.k]=$('fx_'+f.k).value);
  const nm=($('cname').value||'資金計画').replace(/[\\/:*?"<>|]/g,'')+'_'+new Date().toISOString().slice(0,10)+'.json';
