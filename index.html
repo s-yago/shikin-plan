@@ -281,9 +281,9 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
   <div class="cbd">
    <div class="fld"><label>工事グレード</label>
     <select id="grade" onchange="onGrade()">
-     <option value="a">A｜水回り4点交換のみ</option><option value="b">B｜水回り＋内装（クロス・床）</option>
+     <option value="a">A｜水回りパック（水回り見積ツール準拠）</option><option value="b">B｜水回り＋内装（クロス・床）</option>
      <option value="c" selected>C｜部分リノベ（間取り変更なし・フル内装＋水回り）</option>
-     <option value="d">D｜フルリノベ（スケルトン・間取り変更あり）</option><option value="x">X｜見積ツールの金額を直接入力（予備費込み）</option>
+     <option value="d">D｜フルリノベパック（フルリノベ見積ツール準拠）</option><option value="x">X｜見積ツールの金額を直接入力（予備費込み）</option>
     </select></div>
    <div class="fld"><label>工事費（税込）</label><div class="unit"><input type="number" id="reno" value="780"><span class="u">万円</span></div>
     <div class="note" id="renoNote"></div></div>
@@ -604,6 +604,19 @@ footer{max-width:1360px;margin:0 auto;padding:16px 18px 30px;font-size:11px;colo
    </ul>
    <p>本格的な借換の試算が必要になったら、別途ツールに組み込みますのでお知らせください。</p>
 
+   <h4>リノベ工事費のグレード</h4>
+   <p>金額は<b>当社の見積ツールと同じ計算式</b>を入れてあります（2026年7月改定版）。初回接客の概算と、後から出す正式見積がズレないようにするためです。</p>
+   <p><b>A｜水回りパック</b>／水回り見積ツールのパック価格。<b>面積によらず一定</b>です。マンション330万円・戸建320万円（設計コーディネート費20万円込み）。</p>
+   <p><b>D｜フルリノベパック</b>／フルリノベ見積ツールと同じ式で計算します。</p>
+   <ul>
+    <li><b>マンション</b>／基準73㎡ ＝ 1,033万円。1㎡増減ごとに6.9万円。<b>61㎡以下は一律950万円</b>（最低保証額）</li>
+    <li><b>戸建</b>／基準105㎡ ＝ 1,528万円。1㎡増減ごとに8.0万円。<b>85㎡以下は一律1,367万円</b>（最低保証額）</li>
+   </ul>
+   <p>面積を入れると計算式がその場に出ます。「基準73㎡ 1,033万円 − 5㎡ × 6.9万円 ＝ 999万円」という形です。お客様に根拠を示しながら話せます。</p>
+   <p><b>B｜水回り＋内装</b>と<b>C｜部分リノベ</b>／これに対応する見積ツールはありません。水回りパックとフルリノベの中間として概算しています（Bが35％地点、Cが70％地点）。<b>あくまで初回接客の目安</b>なので、金額は上書きして構いません。</p>
+   <p><b>X｜見積ツールの金額を直接入力</b>／すでに正式見積を作っている場合はこちら。予備費込みの総額をそのまま入れてください。</p>
+   <p>なお見積ツールの価格が改定されたときは、このツールの数字も直す必要があります。改定したら教えてください。</p>
+
    <h4>予備費の考え方</h4>
    <p>初期設定は<b>「工事費のみ × 30％」</b>です。フルリノベ見積ツールと同じ考え方に合わせてあります。工事費780万円なら234万円が資金計画に乗ります。</p>
    <p>中古は解体してみないと分からない部分が多く、初回のご提案で薄く見ておくと、後から「追加でこれだけかかります」となってお客様の信頼を失います。<b>厚めに見ておいて、実際にかからなければ繰上返済に回していただく</b>という説明のほうが安全です。</p>
@@ -885,8 +898,18 @@ function openRates(){buildRateTable();
  openM('rates');}
 
 /* ===== 入力生成 ===== */
-const UNIT={mansion:{a:45000,b:80000,c:115000,d:170000},kodate:{a:50000,b:85000,c:125000,d:190000}};
-const GNAME={a:'水回り4点交換のみ',b:'水回り＋内装',c:'部分リノベ',d:'フルリノベ',x:'直接入力'};
+/* ViVi見積ツール準拠の価格体系（2026年7月改定） */
+const PACK={
+ mansion:{baseArea:73,baseTotal:10330000,unit:69000,minArea:61,minTotal:9500000,mizu:3300000},
+ kodate: {baseArea:105,baseTotal:15280000,unit:80000,minArea:85,minTotal:13670000,mizu:3200000}};
+const MIDRATE={b:0.35,c:0.70};
+const GNAME={a:'水回りパック',b:'水回り＋内装',c:'部分リノベ',d:'フルリノベパック',x:'直接入力'};
+function fullPack(t,a){const p=PACK[t];return a<=p.minArea?p.minTotal:p.baseTotal+(a-p.baseArea)*p.unit;}
+function packPrice(g,t,a){
+ const p=PACK[t],lo=p.mizu,hi=fullPack(t,a);
+ if(g==='a')return lo;
+ if(g==='d')return hi;
+ return lo+(hi-lo)*(MIDRATE[g]||0.5);}
 const FEES=[{k:'chukai',n:'仲介手数料（税込）'},{k:'toki',n:'登記費用・司法書士報酬'},
  {k:'inshi1',n:'印紙税（売買契約書）'},{k:'inshi2',n:'印紙税（金銭消費貸借契約書）'},
  {k:'jimu',n:'取扱手数料'},{k:'hosho',n:'ローン保証料'},
@@ -931,9 +954,16 @@ function onBank(){
 }
 function onGrade(){const g=$('grade').value;
  if(g==='x'){$('renoNote').innerHTML='見積ツールで算出した金額をそのまま入力してください。';calc();return;}
- const u=UNIT[PTYPE][g],a=numv('area');
- $('reno').value=Math.round(a*u/10000/10)*10;
- $('renoNote').textContent=`${GNAME[g]}／目安単価 ${(u/10000).toFixed(1)}万円 × ${a}㎡ の概算です。上書きできます。`;calc();}
+ const a=numv('area'),p=PACK[PTYPE],v=packPrice(g,PTYPE,a);
+ $('reno').value=Math.round(v/10000);
+ let note='';
+ if(g==='a')note=`水回り見積ツールのパック価格（面積によらず一定）。設計・コーディネート費20万円を含みます。`;
+ else if(g==='d'){
+  note=(a<=p.minArea)
+   ?`フルリノベ見積ツール準拠。<b>${p.minArea}㎡以下は一律 ${man(p.minTotal)}万円</b>（最低保証額）で計算します。`
+   :`フルリノベ見積ツール準拠。基準 ${p.baseArea}㎡ ${man(p.baseTotal)}万円 ${a>=p.baseArea?'＋':'−'} ${Math.abs(a-p.baseArea)}㎡ × ${(p.unit/10000).toFixed(1)}万円 ＝ <b>${man(v)}万円</b>`;
+ } else note=`水回りパック ${man(p.mizu)}万円 と フルリノベ ${man(fullPack(PTYPE,a))}万円 の中間として概算しています（該当する見積ツールはありません）。金額は上書きできます。`;
+ $('renoNote').innerHTML=note;calc();}
 
 /* ===== 諸費用 ===== */
 const inshiB=p=>p<=1e6?500:p<=5e6?1000:p<=1e7?5000:p<=5e7?10000:30000;
@@ -1243,8 +1273,10 @@ function calc(){
  let rReno=0,RF;
  for(let i=0;i<6;i++){RF=calcFees(price,Math.max(0,rReno),capLoan,years,BANK,true,chk('uwOn'));rReno=capLoan+own-price-RF.total;}
  const area=numv('area');
- const rG=(()=>{if(rReno<=0)return null;const u=UNIT[PTYPE],pu=rReno/Math.max(area,1);
-  return pu>=u.d*.95?'D フルリノベ':pu>=u.c*.95?'C 部分リノベ':pu>=u.b*.95?'B 水回り＋内装':pu>=u.a*.9?'A 水回り交換':null;})();
+ const rG=(()=>{if(rReno<=0)return null;
+  const ranks=[['d','D フルリノベパック'],['c','C 部分リノベ'],['b','B 水回り＋内装'],['a','A 水回りパック']];
+  for(const [g,lb] of ranks){if(rReno>=packPrice(g,PTYPE,area)*0.95)return lb;}
+  return null;})();
  $('revBody').innerHTML=`
   <tr><td>お支払いの目標額（月）</td><td class="n">${yen(target)}円</td></tr>
   <tr><td>うち 維持費</td><td class="n">− ${yen(keep+other)}円</td></tr>
