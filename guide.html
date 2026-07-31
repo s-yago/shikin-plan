@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ViVi不動産｜資金計画シミュレーター 使い方とトークスクリプト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#16294B;--navy-l:#2A4373;--gold:#C8A64B;--orange:#E8842B;--orange-d:#B85F14;
+--ink:#1A1D23;--mid:#5A6478;--soft:#8B94A6;--line:#DFE3EA;--line-s:#C6CCD8;
+--bg:#F4F6F9;--card:#FFF;--tint:#EEF2F8;
+--warn-bg:#FDF3E4;--warn-ln:#E8B96B;--warn-tx:#8A5A0A;
+--ok-bg:#EAF4EE;--ok-ln:#8CC0A0;--ok-tx:#1F6B3F;
+--ng-bg:#FBECEA;--ng-ln:#DFA098;--ng-tx:#9A3323;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Noto Sans JP",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.85;-webkit-text-size-adjust:100%}
+.num{font-family:"Roboto Mono",monospace}
+
+header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:50}
+.hwrap{max-width:900px;margin:0 auto;padding:12px 20px}
+.brand{display:flex;align-items:baseline;gap:9px;margin-bottom:3px}
+.brand b{font-size:19px;letter-spacing:.02em}
+.brand b i{color:var(--gold);font-style:normal}
+.brand span{font-size:12px;color:#A9B6CE}
+.htitle{font-size:12.5px;color:#C6D2E6}
+.tabs{max-width:900px;margin:0 auto;padding:0 20px;display:flex;gap:0}
+.tabs button{flex:1;font-family:inherit;font-size:14px;font-weight:500;padding:11px 6px;border:0;background:#1E355E;color:#A9B6CE;cursor:pointer;border-bottom:3px solid transparent}
+.tabs button.on{background:var(--bg);color:var(--navy);font-weight:700;border-bottom-color:var(--orange)}
+.hact{max-width:900px;margin:0 auto;padding:8px 20px 0;display:flex;gap:7px;flex-wrap:wrap}
+.hact button{font-family:inherit;font-size:11.5px;padding:5px 11px;border-radius:6px;border:1px solid #43598A;background:#1E355E;color:#D6E0F0;cursor:pointer}
+.hact button.pri{background:var(--orange);border-color:var(--orange);color:#fff}
+
+main{max-width:900px;margin:0 auto;padding:20px}
+.pane{display:none}.pane.on{display:block}
+
+h2{font-size:19px;color:var(--navy);margin:32px 0 14px;padding-bottom:9px;border-bottom:2px solid var(--navy)}
+h2:first-child{margin-top:4px}
+h3{font-size:15.5px;color:var(--navy);margin:22px 0 9px;padding-left:11px;border-left:4px solid var(--orange)}
+p{margin-bottom:11px}
+ul,ol{margin:0 0 13px 22px}
+li{margin-bottom:5px}
+b{font-weight:700}
+code{background:var(--tint);padding:1px 6px;border-radius:4px;font-size:13px;font-family:"Roboto Mono",monospace}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.lead{background:#fff;border-left:5px solid var(--gold);border-radius:0 10px 10px 0;padding:15px 20px;margin-bottom:20px;font-size:14.5px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:14px}
+th,td{padding:9px 12px;border:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--tint);font-size:12.5px;color:var(--mid);font-weight:500;white-space:nowrap}
+
+.note{border-radius:8px;padding:12px 15px;margin:12px 0;font-size:13.5px;line-height:1.75}
+.note.w{background:var(--warn-bg);border:1px solid var(--warn-ln);color:var(--warn-tx)}
+.note.o{background:var(--ok-bg);border:1px solid var(--ok-ln);color:var(--ok-tx)}
+.note.n{background:var(--ng-bg);border:1px solid var(--ng-ln);color:var(--ng-tx)}
+.note.g{background:var(--tint);border:1px solid var(--line);color:var(--mid)}
+
+/* トークカード */
+.step{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;overflow:hidden}
+.shd{background:var(--navy);color:#fff;padding:11px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.shd .n{width:30px;height:30px;border-radius:8px;background:var(--gold);color:#2A2205;font-size:14px;font-weight:700;display:grid;place-items:center;flex:none}
+.shd h4{font-size:15.5px;font-weight:700;flex:1;min-width:150px}
+.shd .t{font-size:11.5px;color:#A9B6CE;background:#1E355E;padding:2px 9px;border-radius:20px}
+.sbd{padding:16px 18px}
+.say{background:#FFFBF3;border:1px dashed var(--warn-ln);border-radius:8px;padding:14px 16px;margin-bottom:12px;font-size:15.5px;line-height:1.95;color:#4A3A14}
+.say .lb{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--orange-d);margin-bottom:6px}
+.say p{margin-bottom:9px}.say p:last-child{margin-bottom:0}
+.op{background:var(--tint);border-radius:8px;padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--navy)}
+.op .lb{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--navy-l);margin-bottom:4px}
+.memo{background:#F7F8FA;border-left:4px solid var(--soft);border-radius:0 6px 6px 0;padding:11px 14px;font-size:13px;color:var(--mid);line-height:1.75}
+.memo .lb{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--soft);margin-bottom:4px}
+.memo:last-child{margin-bottom:0}
+
+.qa{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.qa .q{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-left:28px;position:relative}
+.qa .q:before{content:"Q";position:absolute;left:0;top:0;width:21px;height:21px;border-radius:5px;background:var(--navy);color:#fff;font-size:12px;display:grid;place-items:center}
+.qa .a{padding-left:28px;position:relative;font-size:14.5px;line-height:1.9;color:#4A3A14;background:#FFFBF3;border-radius:8px;padding:12px 14px 12px 40px}
+.qa .a:before{content:"A";position:absolute;left:13px;top:12px;width:21px;height:21px;border-radius:5px;background:var(--orange);color:#fff;font-size:12px;display:grid;place-items:center}
+.qa .m{font-size:12.5px;color:var(--soft);margin-top:9px;line-height:1.7}
+
+.warnbar{background:var(--ng-tx);color:#fff;font-size:12.5px;padding:9px 20px;text-align:center;font-weight:500}
+footer{max-width:900px;margin:0 auto;padding:20px;font-size:12px;color:var(--soft);line-height:1.8}
+
+@media print{
+ header,.tabs,.hact,.warnbar,footer,.noprint{display:none!important}
+ body{background:#fff;font-size:11pt}
+ main{max-width:100%;padding:0}
+ .pane{display:block!important}
+ .pane#pTalk{page-break-before:always}
+ .step,.qa,.card,table{page-break-inside:avoid}
+ .shd{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ h2{page-break-after:avoid}
+}
+@media(max-width:600px){
+ body{font-size:14.5px}
+ main{padding:14px}
+ .say{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="hwrap">
+  <div class="brand"><b>Vi<i>V</i>i不動産</b><span>株式会社</span></div>
+  <div class="htitle">リノベ一体型 資金計画シミュレーター｜使い方とトークスクリプト</div>
+ </div>
+ <div class="hact">
+  <button class="pri" onclick="window.print()">印刷 / PDF</button>
+  <button onclick="allOpen()">全部ひらく</button>
+ </div>
+ <div class="tabs">
+  <button id="tMan" class="on" onclick="tab('Man')">使い方マニュアル</button>
+  <button id="tTalk" onclick="tab('Talk')">トークスクリプト</button>
+  <button id="tQa" onclick="tab('Qa')">よくある質問</button>
+ </div>
+</header>
+<div class="warnbar">この資料は社内向けです。お客様にはお見せしないでください。</div>
+
+<main>
+
+<!-- ============ 使い方マニュアル ============ -->
+<div class="pane on" id="pMan">
+
+<div class="lead">
+ <b>このツールは何のためにあるか。</b><br>
+ 中古住宅を買ってリノベーションするお客様の一番の不安は「結局いくらかかって、月々いくら払うのか分からない」ことです。このツールは、それを初回の接客でその場でお見せするために作りました。<br>
+ もうひとつ大事な役割があります。<b>選択型固定金利が終わったあと、支払いがいくら上がるかを必ずお見せすること。</b>ここを黙って契約を進めると、数年後に必ず問題になります。当社がそれをしない会社であることを、数字で示すための道具です。
+</div>
+
+<h2>1. 最初に読むこと</h2>
+
+<h3>URLとブックマーク</h3>
+<p>ツールは次のURLで開きます。担当者から配布された<b>「?sheet=」付きのリンク</b>をブックマークしてください。そのリンクから開くと、金利が自動で最新になります。</p>
+<div class="note g">通常のURLから開くと、その端末に前回保存された金利で表示されます。配布リンクを使ってください。</div>
+
+<h3>画面の切り替え（必ず覚えてください）</h3>
+<p>画面上部に<b>「画面：社内向け」</b>というボタンがあります。<b>お客様に画面をお見せするときは押して「お客様向け」にしてください。</b>金色の帯が出ます。</p>
+<table>
+<tr><th style="width:34%">お客様向けで消えるもの</th><th>理由</th></tr>
+<tr><td>「お客様への説明」のトーク例</td><td>営業の台本なので、見られると気まずい</td></tr>
+<tr><td>オレンジの「※」以降の社内メモ</td><td>「初回接客で必ず伝えること」など社内の指示</td></tr>
+<tr><td>使い方・金利マスタ・読込・リセットのボタン</td><td>誤操作の防止</td></tr>
+</table>
+<div class="note o"><b>強み・弱みの項目は、ひとつも消えません。</b>手数料が高いことも、他行より完済年齢が厳しいことも、そのままお見せしてください。弱みを先に言う会社のほうが信用されます。</div>
+<p>なお<b>印刷するときは、切り替え忘れても自動的にお客様向けの内容で出ます。</b>トーク例は紙には出ません。</p>
+
+<h2>2. 接客での流れ</h2>
+<p>詳しい言い回しは「トークスクリプト」のタブにあります。ここでは操作の順番だけ示します。</p>
+<table>
+<tr><th style="width:8%">順</th><th style="width:30%">やること</th><th>ポイント</th></tr>
+<tr><td>1</td><td><b>家賃</b>を聞いて入れる</td><td>物件価格から入らない。家賃が基準になる</td></tr>
+<tr><td>2</td><td><b>他社ローン</b>を聞く</td><td>審査に直結。ろうきんならおまとめできる可能性</td></tr>
+<tr><td>3</td><td><b>年齢・職業・年収</b></td><td>職業は富山第一の商品選択に効く</td></tr>
+<tr><td>4</td><td><b>完済目標年齢</b>を一緒に決める</td><td>先に決めると後で揉めない</td></tr>
+<tr><td>5</td><td>物件とリノベのグレード</td><td>グレードを切り替えて金額の幅を見せる</td></tr>
+<tr><td>6</td><td><b>Aの比較</b>を見せる</td><td>維持費込みの実質月額で比べる</td></tr>
+<tr><td>7</td><td><b>Bの金利上昇</b>を必ず見せる</td><td>最大優遇と最低優遇の両方</td></tr>
+<tr><td>8</td><td>「各行を比較」「強み・弱み」</td><td>総支払額で比べる</td></tr>
+<tr><td>9</td><td><b>Dの逆算</b>で着地</td><td>「今と同じ支払いでこれだけできます」</td></tr>
+<tr><td>10</td><td>印刷してお渡し</td><td>日付と金利時点が入る</td></tr>
+</table>
+
+<h2>3. 各画面の見方</h2>
+
+<h3>いちばん上の大きな数字</h3>
+<p>左が<b>当初の月額</b>、右が<b>特約期間終了後の月額</b>です。その下に注記が出ます。</p>
+<div class="note w">※ 特約終了後の金利は2026年8月1日時点のものです。現在の店頭基準金利をもとに計算した参考値であり、実際に適用される金利は2年後の特約期間終了時点の金利情勢により変わります。上がることも下がることもあります。</div>
+<p>この注記は<b>必ず声に出して読んでください。</b>「今の金利で計算した数字です」と伝えるだけで、後々のトラブルがほぼなくなります。</p>
+
+<h3>A｜いまの支出との比較</h3>
+<p>3本の帯グラフです。<b>ローン返済額だけで比べていません。</b>管理費・修繕積立金・固定資産税・火災保険を月割りしたものを足した「実質月額」で比べています。他社は返済額だけで比べることが多いので、ここは差別化になります。</p>
+
+<h3>B｜特約期間が終わったあとの支払い</h3>
+<p>6行の表が出ます。<b>最大優遇と最低優遇 × 店頭金利の上昇0／+0.5／+1.0%</b>の組み合わせです。</p>
+<div class="note n"><b>最大優遇の金額だけを見せて契約を進めないでください。</b>引下げ幅は取引項目の該当数で変わります。「条件を全部満たせばこの金利ですが、満たせないとこちらになります」と両方お見せしてください。</div>
+
+<h3>C｜完済年齢別の組み方</h3>
+<p>65／70／75／80歳の4パターンが並びます。銀行ごとの上限を超えるものにはバッジが付きます。</p>
+
+<h3>D｜いまの支出と同じなら、いくらのリノベができるか</h3>
+<p><b>このツールの一番の売りです。</b>今の支出から逆算して、リノベーションに回せる金額を出します。スライダーで「月いくらまでなら増えてもよいか」を動かせます。</p>
+<div class="note o">計算には<b>特約終了後の金利</b>を使っています。当初の安い金利で逆算すると3年目に破綻するので、意図的に厳しい側で計算しています。</div>
+
+<h3>G｜各行・各商品の比較</h3>
+<p>「各行を比較」ボタンで出ます。北陸銀行・まるっと500・まるっと500α・富山第一の4つが並びます。</p>
+<div class="note w"><b>見るのは月々ではなく「総支払額」です。</b>北陸銀行の保証料0円は金利に含まれているためで、ろうきんの正味0円とは意味が違います。取扱手数料も北銀・一銀は22万円、ろうきんは19.8万円（生活資金併用で22万円）と差があります。</div>
+
+<h3>商品ルールの確認</h3>
+<p>お客様の年齢・職業・年収・築年数に応じて、注意点が自動で出ます。<b>赤い「✕」が出ている状態で提案を進めないでください。</b></p>
+
+<h3>強み・弱みボタン</h3>
+<p>4商品をタブで切り替えて見比べられます。繰上返済手数料、疾病特約の年齢条件、最長期間などが箇条書きで入っています。商品ルールとの役割分担はこうです。</p>
+<table>
+<tr><th style="width:32%">強み・弱みボタン</th><td>商品そのものの知識。誰に対しても同じ内容</td></tr>
+<tr><th>商品ルールの確認</th><td>このお客様に効く条件。入力に応じて自動的に変わる</td></tr>
+</table>
+
+<h2>4. リノベ工事費と予備費</h2>
+<p>金額は<b>当社の見積ツールと同じ計算式</b>です。初回の概算と正式見積がズレないようにしてあります。</p>
+<table>
+<tr><th style="width:24%">グレード</th><th>計算</th></tr>
+<tr><td><b>A 水回りパック</b></td><td>マンション330万円／戸建320万円（面積によらず一定）</td></tr>
+<tr><td>B 水回り＋内装</td><td>AとDの中間（35%地点）。対応する見積ツールはなし</td></tr>
+<tr><td>C 部分リノベ</td><td>AとDの中間（70%地点）。対応する見積ツールはなし</td></tr>
+<tr><td><b>D フルリノベパック</b></td><td>マンション：基準73㎡＝1,033万円、1㎡あたり6.9万円、61㎡以下は一律950万円<br>戸建：基準105㎡＝1,528万円、1㎡あたり8.0万円、85㎡以下は一律1,367万円</td></tr>
+<tr><td>X 直接入力</td><td>見積ツールの金額（予備費込み）をそのまま入力</td></tr>
+</table>
+<p><b>予備費はグレードに連動して自動で切り替わります。</b>A〜Dなら工事費の30%を加算、Xなら加算しません。操作は不要です。</p>
+<div class="note w">Xで<b>予備費を含まない</b>見積を入れる場合だけ、「この見積には予備費が入っていないので加算する」にチェックを入れてください。</div>
+
+<h2>5. 金利の更新（担当者のみ）</h2>
+<h3>仕組み</h3>
+<p>Googleスプレッドシートに金利を書くと、全員の画面に反映されます。</p>
+<table>
+<tr><th style="width:26%">① 当初適用金利</th><td>手入力。チラシの大きい数字をそのまま。<b>引下げ幅は使いません</b></td><td style="white-space:nowrap">毎月</td></tr>
+<tr><th>② 店頭基準金利</th><td>手入力。終了後の計算に使う</td><td>毎月</td></tr>
+<tr><th>③ 引下げ幅</th><td>商品概要書の値。設定済み</td><td>商品改定時</td></tr>
+</table>
+<p>終了後の金利は <code>店頭基準金利 ＋ 想定上昇 − 引下げ幅</code> で計算します。当初期間は銀行ごとに特別な優遇がついているため式にできず、手入力にしています。</p>
+
+<h3>毎月やること</h3>
+<ol>
+ <li>各行のチラシを見る</li>
+ <li>スプレッドシートの数字を書き換える（変わっていなければそのまま）</li>
+ <li>1行目の<b>確認日</b>を今日の日付に直す</li>
+</ol>
+<p>保存も送信も不要です。スタッフが画面を開き直せば新しい金利になります。<b>45日を過ぎると警告が出ます。</b></p>
+
+<h2>6. やってはいけないこと</h2>
+<div class="note n">
+<ul style="margin:0 0 0 20px">
+ <li>赤い警告が出ている状態で金額をお客様に提示しない</li>
+ <li>最大優遇の金利だけを見せて契約を進めない</li>
+ <li><b>Bの「特約期間が終わったあとの支払い」を見せずに進めない。</b>特にまるっと500αは必須</li>
+ <li>「今の金利で計算した数字です」と伝えずに金額を提示しない</li>
+ <li>団信の上乗せ率・年齢条件をこのツールの値のまま断定して伝えない（必ず金融機関に確認）</li>
+ <li>審査金利での負担率が赤の場合、金融機関に事前相談せずに進めない</li>
+ <li>借入期間を断定して伝えない（中古は築年数で短くなる場合がある）</li>
+</ul>
+</div>
+
+<h2>7. 困ったとき</h2>
+<table>
+<tr><th style="width:34%">症状</th><th>対処</th></tr>
+<tr><td>金額が「—」のまま</td><td>その銀行・金利タイプの金利が未入力です。別のタイプを選ぶか、担当者に連絡</td></tr>
+<tr><td>「終了後の金利が入っていません」</td><td>店頭基準金利が未入力。当初の金額だけなら出ます。この状態で提示しないこと</td></tr>
+<tr><td>オレンジの帯「スプレッドシートを読み込めませんでした」</td><td>通信状況の確認。その端末の前回の金利で表示は続きます</td></tr>
+<tr><td>「金利の確認から○日経過しています」</td><td>担当者に更新を依頼</td></tr>
+<tr><td>比較表に一部の銀行が出ない</td><td>その銀行の金利が未入力。注記に理由が出ます</td></tr>
+</table>
+
+</div>
+
+<!-- ============ トークスクリプト ============ -->
+<div class="pane" id="pTalk">
+
+<div class="lead">
+ <b>目安45分。</b>数字を見せながら進めます。全部を読み上げる必要はありません。<b>下線と太字のところだけは必ず言ってください。</b><br>
+ このスクリプトの狙いはひとつです。<b>お客様に「今の支払いと変わらないまま新しい住まいになる」と実感していただき、同時に「数年後に上がる可能性」も理解していただくこと。</b>片方だけでは契約後に問題になります。
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">1</span><h4>まず家賃を聞く</h4><span class="t">2分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「今日は具体的な数字で見ていきましょう。まず最初に伺いたいのですが、<b>いま毎月のお家賃はおいくらでしょうか。</b>」</p>
+   <p>「管理費や駐車場は別でお支払いですか。合わせるといくらになりますか。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>「1 お客様の状況」の家賃・管理費等・駐車場に入力</div>
+  <div class="memo"><div class="lb">社内メモ</div>物件価格から入らない。家賃が基準になるとお客様の判断が早くなる。ここを飛ばすと「高い／安い」の物差しがないまま話が進み、最後に決まらない。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">2</span><h4>ほかのお借入を聞く</h4><span class="t">2分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「もうひとつ伺わせてください。<b>お車のローンなど、いま返済中のものはございますか。</b>」</p>
+   <p>「毎月おいくらで、残りはどれくらいでしょうか。」</p>
+   <p>（ある場合）「ありがとうございます。実は<b>ろうきんさんだと、そのローンを住宅ローンと一緒にまとめられる仕組みがあります。</b>あとで金額をお見せしますね。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>「他社ローンの返済」と「その残債」に入力</div>
+  <div class="memo"><div class="lb">社内メモ</div>審査の返済負担率に直結する。ここを聞かずに提案すると、審査で減額回答が出て全部やり直しになる。<br>聞きにくい場合の言い方 → 「審査のときに必ず出てきますので、先に把握しておくとご提案が正確になります」</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">3</span><h4>年齢・ご職業・年収</h4><span class="t">2分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「ローンの年数を決めるのに必要なので、失礼ですが<b>ご年齢</b>を伺えますか。」</p>
+   <p>「お勤めの形は<b>給与所得者の方</b>でいらっしゃいますか。会社役員や自営業だと、使える商品が変わってまいります。」</p>
+   <p>「世帯の年収は、おおよそでけっこうです。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>年齢・年収・職業・勤続年数を入力</div>
+  <div class="memo"><div class="lb">社内メモ</div>富山第一の「プライム住宅ローン」は<b>給与所得者（会社役員を除く）限定</b>。役員・自営業だと保証付タイプになり、保証料と保証会社手数料が別途かかる。ここを間違えると提案が根本から変わる。<br>職業を入れると「商品ルールの確認」に自動で警告が出る。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">4</span><h4>完済年齢を一緒に決める</h4><span class="t">4分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「次に、<b>何歳で払い終えたいか</b>を先に決めておきましょう。ここが決まらないと月々の金額が決まりません。」</p>
+   <p>「大きく分けると<b>2つの考え方</b>があります。<b>65歳で終わらせて定年後に返済を残さない</b>か、<b>70歳まで延ばして月々を軽くする</b>か。」</p>
+   <p>「金額で見るとこうなります。65歳完済だと月○○円、70歳完済だと月○○円で、差は○○円です。」</p>
+   <p>「<b>おすすめの考え方をひとつ申し上げると</b>、まず70歳完済で無理のない金額に抑えておいて、余裕が出たときに繰上返済で前倒しする方法です。最初から65歳完済で組むと、途中で苦しくなっても後から楽にできません。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>完済目標年齢のボタンを切り替えて、Cの表を見せる</div>
+  <div class="memo"><div class="lb">社内メモ</div>先に決めると後で期間の話が揉めない。<br>ろうきん・北陸銀行はネットバンキングからの繰上返済手数料が無料なので、「後から前倒し」戦略と相性がいい。この点は伝えると効く。<br>40代後半以降のお客様は<b>完済時年齢の上限</b>が先に効いてくる（北銀80歳未満・ろうきん81歳未満・一銀82歳未満）。画面に理由が出る。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">5</span><h4>物件とリノベーションの幅を見せる</h4><span class="t">6分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「では、この物件でどこまで手を入れるかを見ていきましょう。<b>工事の範囲で金額がかなり変わります。</b>」</p>
+   <p>「<b>水回りだけを新しくする</b>と○○万円。<b>水回りに加えて壁と床も全部やり替える</b>と○○万円。<b>間取りから作り直すフルリノベーション</b>だと○○万円です。」</p>
+   <p>「この金額は当社の見積システムと同じ計算式で出しています。<b>フルリノベーションはマンションで基準が73㎡で1,033万円、そこから1㎡あたり6.9万円で増減します。</b>今回は○○㎡なので○○万円です。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>工事グレードをA→B→C→Dと切り替えて金額の幅を見せる</div>
+  <div class="memo"><div class="lb">社内メモ</div>いきなり最上位を出さない。幅を見せてからお客様に選ばせる。<br>計算式を口に出すと「適当な概算ではない」と伝わる。画面にも式が出るので指で示す。<br>B・Cは対応する見積ツールがなく中間の概算値。正式見積は必ず見積ツールで作る。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">6</span><h4>予備費30％の説明</h4><span class="t">3分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「ここでひとつ、<b>大事なご説明</b>をさせてください。工事費に<b>30％を予備費として乗せています。</b>」</p>
+   <p>「これは<b>中古ならではの話</b>です。解体して壁を開けてみて初めて分かることがあります。配管が傷んでいた、下地が腐っていた、といったことです。」</p>
+   <p>「<b>私どもは、多めに見ておくやり方を取っています。</b>資金計画に入れておいて、実際にかからなければ<b>そのぶんを繰上返済に回していただけます。</b>」</p>
+   <p>「逆に、安く見積もって後から『追加で○○万円かかります』とお願いするのは、<b>私どもがいちばんしたくないやり方です。</b>」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>「3 リノベーション」の予備費の欄を見せる。計算式が出ている</div>
+  <div class="memo"><div class="lb">社内メモ</div><b>この説明を飛ばして総額だけ出すと「高い」と思われる。</b>理由を先に言う。<br>ここは当社の誠実さを伝える場面。他社との差が最も出るところなので、急がずに話す。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">7</span><h4>月々のお支払いを出す</h4><span class="t">4分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「では月々のお支払いです。<b>当初は○○円</b>になります。」</p>
+   <p>「ただ、これはローンの返済額だけです。<b>実際の生活では、ほかに管理費・修繕積立金・固定資産税・火災保険がかかります。</b>それを月割りして足すと<b>実質○○円</b>です。」</p>
+   <p>「いまお支払いいただいているのが○○円ですから、<b>差は○○円です。</b>」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>Aの帯グラフを見せる。色分けを指で示す</div>
+  <div class="memo"><div class="lb">社内メモ</div><b>ローン返済額だけで比べない。</b>他社は返済額だけで比べることが多く、後から「管理費で月2万円増えた」となる。維持費込みで比べるのが当社のやり方。<br>戸建の場合は修繕積立金がない代わりに、自主積立を月1.2万円見込んでいる。この説明も入れる。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">8</span><h4>金利が上がったときの話 — 最重要</h4><span class="t">7分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「ここが<b>今日いちばん大事なお話</b>です。少しお時間をください。」</p>
+   <p>「いま○年固定を前提にしています。<b>○年後に金利が見直されます。</b>そのとき<b>月○○円</b>になります。<b>月○○円、年間で○○円の差</b>です。」</p>
+   <p>「よく誤解されるのですが、<b>変動金利には『5年間は返済額を変えない』というルールがありますが、固定期間を選ぶタイプにはそのルールがありません。</b>○年目から、いきなり新しい金額になります。」</p>
+   <p>「それから、<b>この金利は今の店頭金利で計算した数字です。</b>○年後にどうなるかは、そのときの金利次第で<b>上がることも下がることもあります。</b>お約束できる数字ではありません。」</p>
+   <p>「もうひとつ。この引下げ幅は<b>お取引の条件を満たした場合の最大の優遇</b>です。条件が揃わないと引下げが小さくなって、<b>こちらの金額になります。</b>」</p>
+   <p>「<b>この金額でも大丈夫かどうかを、いま一緒に確認させてください。</b>ここを確認しておくのが、私どもの仕事だと思っています。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>Bの表を見せる。<b>「最大優遇」と「最低優遇」を切り替えて両方見せる。</b>店頭金利が0.5％・1.0％上がった行も指で示す</div>
+  <div class="memo"><div class="lb">社内メモ</div><b>ここを飛ばすと後で必ず問題になる。</b>絶対に省略しないこと。<br><b>まるっと500αを提案する場合は特に重要。</b>この商品は特約期間が終わると引下げ幅そのものが縮小するため、店頭金利が動かなくても0.30〜0.40％上がる。「金利情勢によっては」ではなく「上がります」と言い切る場面。<br>北陸銀行は直近1年以内に1か月超の返済遅延があると終了後の引下げが適用されない場合がある。他社ローンの返済状況を確認しておく。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">9</span><h4>借入先を比べる</h4><span class="t">6分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「借入先は何行かご案内できます。<b>同じ物件・同じ工事内容で並べてみましょう。</b>」</p>
+   <p>「ご覧いただきたいのは、<b>月々の金額ではなく総支払額です。</b>月々だと差が小さく見えるのですが、諸費用まで含めた総額で見ると<b>○○万円変わります。</b>」</p>
+   <p>「たとえば<b>保証料</b>ですが、北陸銀行さんは『0円』と書いてありますが、これは<b>金利に含まれている</b>という意味です。ろうきんさんは金庫が負担するので<b>本当に0円</b>で、金利にも入っていません。<b>同じ0円でも意味が違います。</b>」</p>
+   <p>「それぞれの強みと弱みも整理してあります。ご覧になりますか。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>「各行を比較」ボタン → 表を見せる。続いて「強み・弱み」ボタンでタブを切り替える</div>
+  <div class="memo"><div class="lb">社内メモ</div><b>弱みも隠さず見せる。</b>手数料が高いことも完済年齢が厳しいことも、そのまま伝える。先に言う会社のほうが信用される。<br>「どこがおすすめ？」と聞かれたときの答え → 「総額でいちばん有利なのはここです。ただ、お勤め先との関係やお取引の条件で変わりますので、<b>まず2行に事前審査を出してみるのがおすすめです。</b>複数行に出しても問題ありません」<br>ろうきんは会員区分（団体会員・生協会員・一般）で金利が変わる。勤務先が労働組合を通じた団体会員かどうか必ず確認。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">10</span><h4>逆算で着地させる — クロージング</h4><span class="t">5分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「最後に、<b>いまのお支払いと同じくらいに収めるとしたら、どこまでリノベーションできるか</b>を見てみましょう。」</p>
+   <p>「いまのお支払いが○○円ですね。<b>同じくらいの金額でしたら、この物件で○○万円ぐらいのリノベーションができます。</b>グレードで言うと○○の水準です。」</p>
+   <p>「つまり、<b>お引越し後のお支払いが今と変わらないまま、新しい住まいになる</b>という形です。」</p>
+   <p>「もし『月○円くらいまでなら増えてもいい』ということであれば、ここまで広がります。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>Dの表を見せる。スライダーを動かして幅を見せる</div>
+  <div class="memo"><div class="lb">社内メモ</div><b>ここがクロージング。</b>お客様の頭の中で「今と変わらず新しい住まいになる」が成立する瞬間。<br>この計算は<b>終了後の金利</b>で行っている。当初の安い金利で逆算すると3年目に破綻するため、意図的に厳しい側で計算している。この点を伝えると信頼が増す。<br>予算が足りない場合は物件を下げる提案に切り替える。無理に押し込まない。</div>
+ </div>
+</div>
+
+<div class="step">
+ <div class="shd"><span class="n">11</span><h4>次のステップ</h4><span class="t">3分</span></div>
+ <div class="sbd">
+  <div class="say"><div class="lb">話す</div>
+   <p>「今日の資金計画を<b>PDFでお渡しします。</b>ご家族ともご相談ください。」</p>
+   <p>「次のステップは<b>事前審査</b>です。<b>2〜3日で結果が出ます。</b>複数の銀行に出しても問題ありませんので、条件を見比べていただけます。」</p>
+   <p>「必要なものは<b>本人確認書類、源泉徴収票、健康保険証</b>です。お車のローンなどがあれば、その明細もご用意ください。」</p>
+   <p>「今日お出しした金額は<b>今の金利での試算</b>です。実際の条件は審査の結果で決まりますので、そこはご了承ください。」</p>
+  </div>
+  <div class="op"><div class="lb">操作</div>「印刷 / PDF」ボタンで帳票を出す。日付と金利の時点が入る</div>
+  <div class="memo"><div class="lb">社内メモ</div>帳票には「本書作成時点の店頭基準金利をもとに算出した参考値」という断り書きが入る。紙が一人歩きしても大丈夫な状態。<br>「保存」ボタンで入力内容をJSONで残せる。再訪時に読み込めば条件変更がすぐできる。<b>案件ごとに必ず保存すること。</b></div>
+ </div>
+</div>
+
+</div>
+
+<!-- ============ よくある質問 ============ -->
+<div class="pane" id="pQa">
+
+<div class="lead">お客様から実際に出やすい質問と、その答え方です。<b>答えに詰まると信用が落ちます。</b>言い方は変えてかまいませんが、内容は外さないでください。</div>
+
+<div class="qa">
+ <div class="q">金利が上がったら払えなくなるんじゃないですか</div>
+ <div class="a">「そのご心配は当然です。だからこそ、<b>上がった場合の金額を先にお見せしています。</b>いまお見せしているこちらの金額が、条件が揃わなかった場合の想定です。この金額でも大丈夫かどうかを、今日一緒に確認しておきましょう。<br>それでも不安が大きい場合は、<b>全期間固定という選び方</b>もあります。当初の金利は高くなりますが、完済まで一円も変わりません。」</div>
+ <div class="m">社内メモ／ろうきんの「あんしん」が全期間固定（最長35年）。選択肢として持っておく。</div>
+</div>
+
+<div class="qa">
+ <div class="q">35年も払い続けられるか不安です</div>
+ <div class="a">「35年フルに払い切る方は、実はあまり多くありません。<b>途中で繰上返済をされる方がほとんどです。</b><br>大事なのは<b>『毎月確実に払える金額で組む』</b>ことです。短く組んで月々が重いと、何かあったときに身動きが取れません。長めに組んで軽くしておいて、余裕が出たら前倒しする。こちらのほうが安全です。<br>ろうきんさんも北陸銀行さんも、<b>インターネットからの繰上返済は手数料が無料</b>です。」</div>
+</div>
+
+<div class="qa">
+ <div class="q">予備費の30％は、結局かかるんですか</div>
+ <div class="a">「<b>かからないことも多いです。</b>ただ、中古は解体してみないと分からない部分があるので、<b>先に枠として確保しておく</b>という考え方です。<br>使わなければ<b>そのぶんを繰上返済に回していただけます。</b>逆に、これを入れずに資金計画を作って、後から『追加で必要です』とお願いするのは、私どもがしたくないやり方です。」</div>
+ <div class="m">社内メモ／実際に予備費がどれくらい使われたか、直近の事例を1つ持っておくと説得力が上がる。</div>
+</div>
+
+<div class="qa">
+ <div class="q">中古は住宅ローンが通りにくいと聞きました</div>
+ <div class="a">「築年数によっては<b>借入できる年数が短くなる場合があります。</b>これは正直にお伝えしておきます。<br>ですので<b>事前審査で実際に何年組めるかを先に確認します。</b>今日お出しした年数は仮の数字で、審査の結果で変わることがあります。<br>それから、<b>1982年1月1日以降に建てられた住宅かどうか</b>で住宅ローン控除の扱いが変わります。この物件は登記で確認させてください。」</div>
+ <div class="m">社内メモ／築年数が閾値を超えると画面に自動で警告が出る。北陸銀行は借換の場合「40年 − 築後経過年数」と定めており、購入時の扱いは要確認。</div>
+</div>
+
+<div class="qa">
+ <div class="q">他社さんでも相談しているんですが</div>
+ <div class="a">「ぜひ比べてください。<b>そのほうが私どもも安心です。</b><br>ひとつだけ、比べるときに見ていただきたい点があります。<b>ローンの返済額だけでなく、管理費や修繕積立金、固定資産税まで含めた実質の月額で比べてください。</b>それと、<b>固定期間が終わったあとの金額</b>です。この2つを出していない資金計画は、後から金額が変わります。<br>今日の資料はその両方を入れてあります。比較の材料にお使いください。」</div>
+ <div class="m">社内メモ／囲い込まない姿勢をそのまま出す。これが当社の方針。</div>
+</div>
+
+<div class="qa">
+ <div class="q">保証料0円って、どこも同じですか</div>
+ <div class="a">「<b>意味が違います。</b>北陸銀行さんの0円は<b>金利に含まれている</b>ためで、負担がないわけではありません。ろうきんさんは金庫が負担するので<b>本当に0円</b>で、金利にも入っていません。富山第一銀行さんのプライム住宅ローンは<b>保証料そのものが不要</b>です。<br>ですので、<b>総支払額で見比べていただくのが正確です。</b>」</div>
+</div>
+
+<div class="qa">
+ <div class="q">もっと金利の安いところはないんですか</div>
+ <div class="a">「金利だけで言えば、より低いところもあります。ただ<b>金利は毎月変わりますし、手数料や保証料で総額が逆転することがよくあります。</b><br>それと、中古とリノベーションを<b>一本のローンでまとめられるか</b>が実は大きな違いです。別々に借りると金利も期間も条件が悪くなります。<br>今日ご案内した3行は、<b>その一本化に対応していて、当社が実績のあるところ</b>です。」</div>
+</div>
+
+<div class="qa">
+ <div class="q">頭金はどれくらい入れたほうがいいですか</div>
+ <div class="a">「一概には言えないのですが、<b>手元の現金を使い切らないこと</b>をお勧めしています。<br>お引越し後にも家具や家電、カーテンなどで意外と出ていきます。それに、お子様の進学や急な出費もあります。<b>いま無理に入れて後で借りると、住宅ローンよりずっと高い金利になります。</b><br>いくら入れた場合と入れない場合で月々がどう変わるかは、この場でお出しできます。」</div>
+ <div class="m">社内メモ／自己資金の欄を動かしてその場で比較する。ろうきんなら生活資金の上乗せで家具家電も長期に回せる。</div>
+</div>
+
+<div class="qa">
+ <div class="q">車のローンがあると審査に落ちますか</div>
+ <div class="a">「落ちるとは限りませんが、<b>借入できる金額が下がることはあります。</b><br>ただ<b>ろうきんさんには、そのローンを住宅ローンと一緒にまとめられる仕組みがあります。</b>最高500万円まで上乗せでき、しかも<b>返済期間を住宅ローンと同じ長さにできます。</b><br>いまお車のローンが月○円だとすると、まとめた場合は月○円になります。月○円軽くなる計算です。」</div>
+ <div class="m">社内メモ／おまとめの効果は画面に自動で出る。ただし期間が延びるぶん総支払利息は増える。両面を伝える。上乗せ部分は住宅ローン控除の対象外。</div>
+</div>
+
+<div class="qa">
+ <div class="q">この金額で決めてしまって大丈夫ですか</div>
+ <div class="a">「今日の数字は<b>今の金利での試算</b>ですので、これで決めていただく必要はありません。<br>まず<b>事前審査</b>を出して、実際にいくら・何年借りられるかを確定させましょう。そのうえで正式なお見積りをお作りします。<b>順番としては、審査の結果を見てからご判断いただくのが安全です。</b>」</div>
+</div>
+
+</div>
+
+</main>
+
+<footer>
+ 本資料は社内向けの手引きです。記載の金利・手数料・商品条件は、各金融機関の商品概要説明書（北陸銀行2026年8月1日現在／富山第一銀行令和8年7月1日現在／北陸ろうきん2026年7月10日現在）にもとづく参考情報であり、商品改定により変わります。お客様への説明前に必ず最新の商品概要説明書をご確認ください。<br>
+ ViVi不動産株式会社
+</footer>
+
+<script>
+function tab(n){
+ ['Man','Talk','Qa'].forEach(x=>{
+  document.getElementById('p'+x).classList.toggle('on',x===n);
+  document.getElementById('t'+x).classList.toggle('on',x===n);
+ });
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function allOpen(){
+ ['Man','Talk','Qa'].forEach(x=>document.getElementById('p'+x).classList.add('on'));
+ ['Man','Talk','Qa'].forEach(x=>document.getElementById('t'+x).classList.remove('on'));
+}
+</script>
+</body>
+</html>
