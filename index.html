@@ -209,7 +209,8 @@ body.client #modeHint{display:block}
   <div class="htitle">リノベ一体型 資金計画シミュレーター</div>
   <div class="hact">
    <button id="modeBtn" onclick="toggleMode()" style="font-weight:700">画面：社内向け</button>
-   <button class="staffonly" onclick="openM('man')">使い方</button>
+   <button class="staffonly gld" onclick="openGuide()">使い方・トーク</button>
+   <button class="staffonly" onclick="openM('man')">画面の説明</button>
    <button class="gld staffonly" onclick="openRates()">金利マスタ</button>
    <button onclick="doCompare()">各行を比較</button>
    <button onclick="openSwot()">強み・弱み</button>
@@ -532,8 +533,14 @@ body.client #modeHint{display:block}
 
 <div class="mask" id="man" onclick="if(event.target===this)closeM('man')">
  <div class="modal nar">
-  <div class="mhd"><h3>使い方（社内マニュアル）</h3><button class="x" onclick="closeM('man')">×</button></div>
+  <div class="mhd"><h3>画面の説明（このツールの操作）</h3><button class="x" onclick="closeM('man')">×</button></div>
   <div class="mbd">
+   <div class="msg w" style="margin:0 0 16px;padding:12px 14px">
+    <b>接客のトークスクリプト（19分・7ステップ）とよくある質問への答え方は、別資料にまとめてあります。</b><br>
+    ヘッダーの金色の<b>「使い方・トーク」</b>ボタン、または
+    <a href="guide.html" target="_blank" rel="noopener" style="color:var(--orange-d);font-weight:700">こちらから開いてください</a>。<br>
+    このモーダルは<b>操作中にすぐ確認したいこと</b>をまとめたものです。
+   </div>
    <h4>このツールの金利の考え方</h4>
    <p>各行の商品概要書を読み込んで作ってあります。金利は次の式で計算します。</p>
    <p style="background:var(--tint);padding:10px 12px;border-radius:6px"><b>当初の金利　＝ チラシの新規お借入時金利をそのまま手入力</b><br>
@@ -1094,6 +1101,11 @@ function renderSwot(){
    <ul style="margin:0 0 0 18px;font-size:12.5px;line-height:1.75;color:#4A1F17">${li(S.weak)}</ul></div>`;
 }
 function openSwot(){SWOTVIEW=BANK;renderSwot();openM('swot');}
+function openGuide(){
+ const u=location.pathname.replace(/[^/]*$/,'')+'guide.html';
+ const w2=window.open(u,'_blank');
+ if(!w2)alert('別タブがブロックされました。ブラウザの設定をご確認ください。\n\nURL：'+location.origin+u);
+}
 function openRates(){buildRateTable();
  if($('sheetUrl'))$('sheetUrl').value=SHEETSRC.url||'';
  if(SHEETSRC.ok)setSheetMsg(`連携中です（${SHEETSRC.at} 更新）。金利はスプレッドシートの値が優先されます。<br>${auditRates()}`,'o');
