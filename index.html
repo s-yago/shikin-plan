@@ -659,6 +659,11 @@ body.client #modeHint{display:block}
    <p><b>X｜見積ツールの金額を直接入力</b>／すでに正式見積を作っている場合はこちら。予備費込みの総額をそのまま入れてください。</p>
    <p>なお見積ツールの価格が改定されたときは、このツールの数字も直す必要があります。改定したら教えてください。</p>
 
+   <h4>借入額の単位</h4>
+   <p>各行とも借入額は<b>10万円単位</b>です。このツールでは、物件価格・工事費・諸費用の合計から自己資金を引いた金額を<b>10万円単位に切り上げて</b>表示します。端数が出た分は手元に残るか、諸費用の実額との差に充てられます。</p>
+   <p>逆に「D いくらのリノベができるか」の<b>お借入可能額は切り下げ</b>にしています。可能額を多めに見せると計画が崩れるため、少なく見積もる側に寄せてあります。</p>
+   <p>単位は金利マスタの<b>「借入額の単位」</b>で商品ごとに変更できます。なお富山第一銀行の商品概要書には「100万円〜1億円（1万円単位）」と記載があります。より細かく出したい場合は10000に変更してください。</p>
+
    <h4>予備費の考え方</h4>
    <p>初期設定は<b>「工事費のみ × 30％」</b>です。フルリノベ見積ツールと同じ考え方に合わせてあります。工事費780万円なら234万円が資金計画に乗ります。</p>
    <p>中古は解体してみないと分からない部分が多く、初回のご提案で薄く見ておくと、後から「追加でこれだけかかります」となってお客様の信頼を失います。<b>厚めに見ておいて、実際にかからなければ繰上返済に回していただく</b>という説明のほうが安全です。</p>
@@ -745,7 +750,7 @@ const BASE={date:'',banks:{
   maxYear:40,maxYearFixAll:40,maxAge:80,applyMin:18,applyMax:71,minYear:2,maxYearAlt:null,maxYearChuko:null,
   newFix:['f2','f5'],availFix:['f0','f2','f3','f5','f10'],
   jimuType:'fixed',jimuFixed:220000,jimuRate:0,jimuAlt:null,
-  hosho:'inrate',hoshoRate:0,ltvMax:150,ltvKarikae:200,karikaeYearRule:40,pairNote:true,
+  hosho:'inrate',hoshoRate:0,loanUnit:100000,ltvMax:150,ltvKarikae:200,karikaeYearRule:40,pairNote:true,
   tk:[{n:'地銀協一般団信',u:0,o:0,th:99},{n:'8大疾病保障団信',u:0,o:0.30,th:51},
       {n:'全疾病保障団信',u:0.10,o:0.40,th:51},{n:'地銀協ライフサポート団信',u:0.05,o:null,th:51}],
   uw:false,minIncome:0,
@@ -759,7 +764,7 @@ const BASE={date:'',banks:{
   hosho:'none',hoshoRate:0,ltvMax:0,
   tk:[{n:'ろうきん団信',u:0,o:0,th:99},{n:'夫婦連生団信',u:0.10,o:0.10,th:99},
       {n:'オールマイティ保障型（3大疾病・障がい特約）',u:0.20,o:0.20,th:99},{n:'引受緩和団信',u:0.40,o:0.40,th:99}],
-  uw:true,uwMax:500,uwLabel:'まるっと500返済分',minIncome:150,minTenure:1,pairNote:true,
+  uw:true,uwMax:500,uwLabel:'まるっと500返済分',loanUnit:100000,minIncome:150,minTenure:1,pairNote:true,
   memo:'全期間引下げ型。特約期間終了後も当初の引下げ幅が続きます。保証料0円（ろうきん負担）。取扱手数料198,000円（生活資金併用時220,000円）。最長40年（要件を満たせば50年・全期間固定35年）・完済時満81歳未満。'},
  rokina:{name:'まるっと500α（北陸ろうきん）',short:'ろうきん500α',plan:'当初期間引下げ型',
   rates:emptyR(),base:emptyR(),
@@ -770,7 +775,7 @@ const BASE={date:'',banks:{
   hosho:'none',hoshoRate:0,ltvMax:0,
   tk:[{n:'ろうきん団信',u:0,o:0,th:99},{n:'夫婦連生団信',u:0.10,o:0.10,th:99},
       {n:'オールマイティ保障型（3大疾病・障がい特約）',u:0.20,o:0.20,th:99},{n:'引受緩和団信',u:0.40,o:0.40,th:99}],
-  uw:true,uwMax:500,uwLabel:'まるっと500α返済分',minIncome:150,minTenure:1,pairNote:true,
+  uw:true,uwMax:500,uwLabel:'まるっと500α返済分',loanUnit:100000,minIncome:150,minTenure:1,pairNote:true,
   memo:'当初期間引下げ型。特約期間終了後は取引項目分の引下げ（最大1.25%）のみになり、店頭金利が動かなくても金利が上がります。保証料0円。最長40年（要件を満たせば50年）・完済時満81歳未満。'},
  ichigin:{name:'富山第一銀行（プライム住宅ローン）',short:'一銀',
   rates:emptyR(),base:emptyR(),
@@ -778,7 +783,7 @@ const BASE={date:'',banks:{
   maxYear:50,maxYearFixAll:50,maxAge:82,applyMin:18,applyMax:99,minYear:2,maxYearAlt:null,maxYearChuko:null,
   newFix:['f2','f5'],availFix:['f0','f2','f3','f5','f10'],
   jimuType:'fixed',jimuFixed:220000,jimuRate:0,jimuAlt:330000,
-  hosho:'none',hoshoRate:0,ltvMax:0,kyuyoOnly:true,
+  hosho:'none',hoshoRate:0,loanUnit:100000,ltvMax:0,kyuyoOnly:true,
   tk:[{n:'一般団信',u:0,o:0,th:99},{n:'11疾病保障付団信',u:0,o:null,th:51},
       {n:'3大疾病保障付団信',u:0.20,o:0.20,th:99},{n:'ワイド団信',u:0.30,o:0.30,th:99}],
   uw:false,minIncome:0,
@@ -788,7 +793,7 @@ const BASE={date:'',banks:{
   maxYear:35,maxYearFixAll:35,maxAge:80,applyMin:18,applyMax:99,minYear:1,maxYearAlt:null,maxYearChuko:null,
   newFix:['f0','f2','f3','f5','f10','f15','f20','fAll'],availFix:['f0','f2','f3','f5','f10','f15','f20','fAll'],
   jimuType:'rate',jimuFixed:33000,jimuRate:2.2,jimuAlt:null,
-  hosho:'ikkatsu',hoshoRate:2.06,ltvMax:0,
+  hosho:'ikkatsu',hoshoRate:2.06,loanUnit:100000,ltvMax:0,
   tk:[{n:'一般団信',u:0,o:0,th:99},{n:'疾病保障特約',u:null,o:null,th:50}],
   uw:false,minIncome:0,memo:'金融機関の条件を直接入力してください。'}
 }};
@@ -1035,6 +1040,7 @@ function buildRateTable(){
  row('　中古物件の上限 <span style="color:var(--soft)">年</span>','maxYearChuko','制限なし');
  row('完済時年齢の上限 <span style="color:var(--soft)">歳未満</span>','maxAge');
  row('申込時年齢の上限 <span style="color:var(--soft)">歳未満</span>','applyMax');
+ row('借入額の単位 <span style="color:var(--soft)">円</span>','loanUnit');
  row('取扱手数料 <span style="color:var(--soft)">円</span>','jimuFixed');
  row('　別パターン <span style="color:var(--soft)">円</span>','jimuAlt','なし');
  row('保証料率（35年） <span style="color:var(--soft)">%</span>','hoshoRate');
@@ -1256,16 +1262,18 @@ function runBank(bk,useOv,discMode,fallback){
  const matome=uwOn&&chk('uwMatome');
  const olPay=numv('otherLoan'),olRemain=matome?0:numv('otherBal')*1e4;
  /* 借入額 */
- let loan=Math.max(0,price+reno-own),F;
+ const LU=B.loanUnit||1;
+ const ceilU=v=>LU>1?Math.ceil(v/LU)*LU:v;
+ let loan=ceilU(Math.max(0,price+reno-own)),F;
  for(let i=0;i<6;i++){F=calcFees(price,reno,loan,years,bk,useOv,uwOn);
-  loan=chk('incFee')?Math.max(0,price+reno+F.total-own):Math.max(0,price+reno-own);}
+  loan=ceilU(chk('incFee')?Math.max(0,price+reno+F.total-own):Math.max(0,price+reno-own));}
  const need=price+reno+F.total;
  const m1=pmt(loan,r1,n);
  const b2=(fixN>0&&fixN<n)?bal(loan,r1,n,fixN):loan;
  const m2=(fixN>0&&fixN<n)?pmt(b2,r2,n-fixN):m1;
  const totRepay=(fixN>0&&fixN<n)?m1*fixN+m2*(n-fixN):m1*n;
  const cashOut=chk('incFee')?Math.max(0,Math.min(own,need)):Math.min(own,price+reno)+F.total;
- return {B,bankKey:bk,fk,fkSub,ak,years,n,maxY,prodY,ageY,capped,capBy,fixN,r1,r2,rBase,stTen,disc:dRaw,upv,
+ return {B,bankKey:bk,fk,fkSub,ak,years,n,maxY,prodY,ageY,capped,capBy,fixN,r1,r2,rBase,stTen,disc:dRaw,upv,LU,
   tkAdd,tkName,tkNA,loan,need,F,m1,m2,uwOn,uwAmt,uwR,uwPay,uwTot,matome,olPay,olRemain,
   price,reno,own,cashOut,totRepay,totAll:totRepay+uwTot+cashOut+olRemain,
   readyInit:rBase!=null,
@@ -1415,7 +1423,8 @@ function calc(){
  $('mb1').textContent=ok?yen(m1+uwPay):'—';$('mb2').textContent=okA?yen(m2+uwPay):'—';
  $('fyLbl').textContent=(R.fk!=='fAll'&&R.fk!=='f0')?fixYears(R.fk)+'年間':'';
  $('kTotal').innerHTML=man(need)+'<small>万</small>';$('kOwn').innerHTML=man(R.cashOut)+'<small>万</small>';
- $('kLoan').innerHTML=man(loan+uwAmt)+'<small>万</small>';$('kYear').innerHTML=years+'<small>年</small>';
+ $('kLoan').innerHTML=man(loan+uwAmt)+'<small>万</small>'+(R.LU>1?`<div style="font-size:10px;color:var(--soft);font-weight:400;line-height:1.4;margin-top:1px">${(R.LU/10000)}万円単位に切上</div>`:'');
+ $('kYear').innerHTML=years+'<small>年</small>';
  $('phMeta').textContent=($('cname').value?$('cname').value+'　':'')+new Date().toLocaleDateString('ja-JP')+`　／　${B.name}・${fl}・${DISCMODE==='max'?'最大優遇':'最低優遇'}`+(M.date?`（金利 ${M.date} 時点）`:'');
 
  /* A */
@@ -1501,7 +1510,8 @@ function calc(){
  /* D */
  const target=rentAll+numv('allow');
  const avail=Math.max(0,target-keep-other-uwPay-olAfter);
- const capLoan=loanFrom(avail,r2,n);
+ const LU2=B.loanUnit||1;
+ const capLoan=LU2>1?Math.floor(loanFrom(avail,r2,n)/LU2)*LU2:loanFrom(avail,r2,n);
  let rReno=0,RF;
  for(let i=0;i<6;i++){RF=calcFees(price,Math.max(0,rReno),capLoan,years,BANK,true,chk('uwOn'));rReno=capLoan+own-price-RF.total;}
  const area=numv('area');
@@ -1515,7 +1525,7 @@ function calc(){
   ${uwPay>0?`<tr><td>うち ${B.uwLabel||'上乗せ返済分'}</td><td class="n">− ${yen(uwPay)}円</td></tr>`:''}
   ${olAfter>0?`<tr><td>うち 他社ローン（継続分）</td><td class="n">− ${yen(olAfter)}円</td></tr>`:''}
   <tr><td>住宅ローン返済に回せる額（月）</td><td class="n">${yen(avail)}円</td></tr>
-  <tr><td>お借入可能額 <span style="color:var(--soft);font-size:11px">終了後金利 ${r2.toFixed(3)}％・${years}年で試算</span></td><td class="n">${man(capLoan)}万円</td></tr>
+  <tr><td>お借入可能額 <span style="color:var(--soft);font-size:11px">終了後金利 ${r2.toFixed(3)}％・${years}年で試算${LU2>1?`／${LU2/10000}万円単位に切下`:''}</span></td><td class="n">${man(capLoan)}万円</td></tr>
   <tr><td>＋ ご自己資金</td><td class="n">${man(own)}万円</td></tr>
   <tr><td>− 物件価格</td><td class="n">${man(price)}万円</td></tr>
   <tr><td>− 諸費用</td><td class="n">${man(RF.total)}万円</td></tr>
