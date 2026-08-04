@@ -316,7 +316,8 @@ body.client #modeHint{display:block}
      <label class="chk" style="margin-top:6px"><input type="checkbox" id="yobiForce" onchange="calc()">この見積には予備費が入っていないので加算する</label>
     </div>
    </div>
-   <div class="fld" style="margin-top:11px"><label class="chk"><input type="checkbox" id="incFurniture" checked>家具・家電・カーテン費用を諸費用に含める</label></div>
+   <div class="fld" style="margin-top:11px"><label class="chk"><input type="checkbox" id="incFurniture" checked>引越費用・家具・家電・カーテンの見込み額を表示する</label>
+    <div class="note">これらは<b>北陸銀行・富山第一銀行では住宅ローンのお使いみちに含まれません</b>（諸費用は登記費用・火災保険料・取扱手数料等に限られます）。<b>ろうきんの生活資金枠だけが対応できます。</b>それ以外は自己資金でのご用意になります。</div></div>
   </div>
  </div>
 
@@ -462,8 +463,33 @@ body.client #modeHint{display:block}
    <label>いまの支出に対して、月々いくらまでなら増えても良いか</label>
    <input type="range" id="allow" min="-10000" max="40000" step="1000" value="0" oninput="calc()">
    <div class="rngv"><span>−1万円</span><span><b class="num" id="allowv">±0円</b></span><span>＋4万円</span></div></div>
+
+  <div style="border-top:1px solid var(--line)">
+   <div class="chd" style="background:#EEF7F1;border-bottom:1px solid var(--line)"><span class="no" style="background:var(--ok-tx)">主</span><h2>物件価格の逆算（当社の原則）</h2></div>
+   <div class="cbd noprint" style="padding-bottom:2px">
+    <div class="row2">
+     <div class="fld"><label>工事の前提</label>
+      <div class="seg sm" id="segRevG"><button data-v="d" class="on">フルリノベ</button><button data-v="c">部分リノベ</button><button data-v="b">水回り＋内装</button><button data-v="a">水回りパック</button></div>
+      <div class="note">原則はフルリノベで組みます。ご希望に合わない場合だけ変えてください。</div></div>
+     <div class="fld"><label>諸費用の見方</label>
+      <div class="seg sm" id="segRevF"><button data-v="p10" class="on">10％で概算</button><button data-v="detail">明細から計算</button></div>
+      <div class="note">原則は残りの10％。実額が必要なときは明細計算に切り替えます。</div></div>
+    </div>
+   </div>
+   <div class="scroll"><table><tbody id="backBody"></tbody></table></div>
+   <div class="msg" id="backMsg"></div>
+   <div class="talk"><div class="tt">お客様への説明</div><div id="backTalk"></div></div>
+  </div>
+
+  <div class="chd" style="background:var(--tint);border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><span class="no">参</span><h2>この物件価格ならいくらのリノベができるか</h2></div>
   <table><tbody id="revBody"></tbody></table>
   <div class="msg" id="revMsg"></div>
+  <div id="allocWrap" style="border-top:1px solid var(--line);margin-top:2px">
+   <div class="chd" style="background:#FFF8EC;border-bottom:1px solid var(--line)"><span class="no" style="background:var(--orange)">配</span><h2>他の配分も見る（フルリノベにこだわらない場合）</h2></div>
+   <div class="scroll"><table><thead><tr><th>物件価格</th><th>リノベ工事費<br><span style="font-weight:400;font-size:10.5px">予備費を除く本体</span></th><th>予備費30％</th><th>できる工事の内容</th></tr></thead><tbody id="allocBody"></tbody></table></div>
+   <div class="msg" id="allocMsg"></div>
+   <div class="talk"><div class="tt">お客様への説明</div><div id="allocTalk"></div></div>
+  </div>
   <div class="talk"><div class="tt">お客様への説明</div><div id="revTalk"></div></div>
  </div>
 
@@ -1032,6 +1058,7 @@ const SWOT={
    '<b>完済時 満80歳未満</b>（一銀は82歳、ろうきんは81歳）',
    '融資時年齢 満18歳以上<b>71歳未満</b>',
    '<b>富山県内にお住まいの方が対象</b>',
+   '<b>引越費用・家財購入費は住宅ローンで借りられません。</b>お使いみちの諸費用は登記費用・火災保険料・取扱手数料等に限られます（この条件で約85万円が自己資金）@@自己資金が薄いお客様にはろうきんの生活資金枠を提案する材料になる',
    '<b>満51歳以上</b>は8大疾病 ＋0.3％、全疾病 ＋0.4％の上乗せ',
    '<b>地銀協ライフサポート団信は満51歳以上は取扱いなし</b>（50歳以下なら＋0.05％）',
    '金利特約設定手数料 11,000円（当初は不要。更新時に必要）',
@@ -1045,6 +1072,7 @@ const SWOT={
    '<b>全期間引下げ型</b>。特約期間終了後も当初の引下げ幅がそのまま続きます',
    '<b>生活資金を最高500万円まで上乗せ</b>できます。住宅ローンでは使えない用途に充てられます',
    '生活資金の返済期間は<b>住宅資金と同じ長期</b>にできます（月々の負担を大きく抑えられます）',
+   '<b>引越費用と家財購入費（家具・家電・カーテン）を借りられます。</b>北陸銀行・富山第一銀行の住宅ローンでは対象外の用途で、<b>3行でここだけ</b>@@自己資金が薄いお客様には決定的な差になる。80〜100万円を自己資金で用意しなくてよくなる',
    '生活資金の用途が広い。家財購入・引越費用／自動車／教育・結婚／<b>他金融機関の無担保ローン借換</b>／当金庫ローンからの借換',
    '<b>ろうきんダイレクト（ネットバンキング）なら全額繰上償還手数料が無料</b>',
    '<b>最長50年</b>（一定の要件を満たす場合。原則40年）',
@@ -1071,6 +1099,7 @@ const SWOT={
    '<b>当初期間の引下げ幅が大きい</b>（最大1.65％＝2年固定／1.55％＝3・5・10年固定）。当面の負担を最小にできます',
    '<b>保証料 0円（ろうきん負担）</b>。金利にも含まれていない正味ゼロです',
    '<b>2年固定が選べます</b>（まるっと500にはありません）',
+   '<b>引越費用と家財購入費を借りられます。</b>他行の住宅ローンでは対象外の用途です',
    '生活資金を<b>最高500万円まで上乗せ</b>でき、返済期間は住宅資金と同じ長期にできます',
    '<b>ろうきんダイレクトなら全額繰上償還手数料が無料</b>',
    '<b>最長50年</b>（一定の要件を満たす場合。原則40年）／完済時 満81歳未満',
@@ -1107,6 +1136,7 @@ const SWOT={
    '<b>保証料不要のプライム住宅ローンは給与所得者（会社役員を除く）が対象です。</b>自営業・会社役員の方は保証付タイプとなり、保証料の一括前払いと保証会社手数料（33,000〜55,000円）が別途必要です@@ご職業を先に確認すること。ここを間違えると提案が根本から変わる',
    '<b>銀行手数料 220,000円または330,000円</b>（審査結果により異なります）@@差額11万円をどう伝えるか事前に整理しておくこと',
    '<b>新規優遇プラン①は2年固定・5年固定のみ</b>',
+   '<b>引越費用・家財購入費は住宅ローンで借りられません。</b>お使いみちの諸費用は登記費用・火災保険料・保証料・事務手数料に限られます@@自己資金が薄いお客様にはろうきんを提案する材料になる',
    '<b>満51歳以上</b>は11疾病保障付団信の上乗せ0％の対象外です',
    '3大疾病保障付団信は ＋0.20％',
    '<b>保証料を分割払いにすると金利が＋0.2％</b>',
@@ -1122,7 +1152,7 @@ const SWOT={
 var KB=[
 /* --- 北陸銀行 --- */
 {b:'hokugin',c:'対象者',t:'ご利用いただける方',d:'融資時の年齢が満18歳以上71歳未満、<b>完済時年齢が満80歳未満</b>の方。団体信用生命保険に加入できる方。安定的かつ継続的な収入のある方。<b>富山県内にお住まいの方</b>。北陸保証サービス（株）の保証を受けられる方。',kw:'年齢 条件 資格 富山県 何歳まで 何歳 誰が 使える 対象'},
-{b:'hokugin',c:'お使いみち',t:'お使いみち',d:'住宅新築資金・増改築資金／土地付住宅の購入資金（新築・中古）／自己居住用分譲マンション購入資金（新築・中古）／住宅用土地の購入資金／他金融機関での住宅資金融資からの借換資金／購入・新築・借換に伴う諸費用（登記費用、火災保険料、取扱手数料等）',kw:'用途 使途 借換 諸費用 リフォーム'},
+{b:'hokugin',c:'お使いみち',t:'お使いみち',d:'住宅新築資金・増改築資金／土地付住宅の購入資金（新築・中古）／自己居住用分譲マンション購入資金（新築・中古）／住宅用土地の購入資金／他金融機関での住宅資金融資からの借換資金／購入・新築・借換に伴う諸費用（<b>登記費用、火災保険料、取扱手数料等</b>）<br><b>引越費用・家財購入費（家具・家電・カーテン）は対象に含まれていません。</b>自己資金でのご用意が必要です。ろうきんの生活資金枠なら対象になります。',kw:'用途 使途 借換 諸費用 リフォーム 引越 家具 家電 カーテン 家財'},
 {b:'hokugin',c:'融資金額',t:'ご融資金額',d:'100万円以上2億円以内（10万円単位）。<b>【新築】</b>所要資金の範囲内かつ銀行評価額の最大150％まで。<b>【借換】</b>所要資金の範囲内かつ銀行評価額の最大200％まで。',kw:'いくらまで 上限 評価額 オーバーローン いくら 最大 限度'},
 {b:'hokugin',c:'融資期間',t:'ご融資期間',d:'2年以上<b>40年以内</b>（1年単位）。他金融機関からの借換の場合は「40年 − 築後（購入・増改築）経過年数」以内、または他金融機関での残りの返済期間のどちらか長い期間。<b>物件やその他条件によって融資期間が異なる場合があります。</b>',kw:'何年 期間 最長 借換 何年まで 期間は 長さ'},
 {b:'hokugin',c:'融資期間',t:'中古物件の借入可能年数（行内ルール）',d:'原則マンション・戸建とも<b>「60年 − 築年数」が借入可能年数</b>です。築32年なら28年。<b>ご相談により長くなる場合があります。</b>新築は規定なし（土地の有無により異なる）。完済時年齢は「79歳 − 現在の年齢」が上限。',kw:'中古 築年数 60年 何年 マンション 戸建 古い 築古 何年まで 短くなる'},
@@ -1145,6 +1175,7 @@ var KB=[
 /* --- 富山第一銀行 --- */
 {b:'ichigin',c:'対象者',t:'プライム住宅ローン（保証料不要型）の対象者',d:'①お申込時年齢が満18歳以上、<b>完済時年齢が満82歳未満</b>の方 ②安定した収入が継続して得られる職業・職歴の方で<b>給与所得者（会社役員を除く）</b> ③団体信用生命保険の加入適格者',kw:'プライム 対象 年齢 給与所得者 会社役員 自営業 何歳まで 誰が 使える 個人事業主'},
 {b:'ichigin',c:'対象者',t:'保証付タイプの対象者（保証会社により異なる）',d:'<b>富山ファースト・ディーシー</b>＝申込18歳以上70歳未満・完済82歳未満・前年度税込年収200万円以上・勤続1年以上（自営/役員は営業3年以上）／<b>かんそうしん</b>＝申込18歳以上70歳未満・完済82歳未満／<b>全国保証</b>＝申込18歳以上65歳未満・完済80歳未満（実行時40歳未満なら85歳未満）・前年度税込年収100万円以上・勤続1年以上（自営/役員は営業2年以上）。<b>条件は改定される場合があるため要確認。</b>',kw:'保証付 保証会社 年齢 年収 かんそうしん 全国保証'},
+{b:'ichigin',c:'お使いみち',t:'お使いみち',d:'住宅の新築・増改築資金／土地付住宅の購入資金（新築・中古）／自己居住用の分譲マンション購入資金（新築・中古）／住宅取得に関する借入金の借り換え資金／上記の他、購入・新築に伴う諸費用（<b>登記費用・火災保険料・保証料・事務手数料</b>）<br><b>引越費用・家財購入費（家具・家電・カーテン）は対象に含まれていません。</b>自己資金でのご用意が必要です。ろうきんの生活資金枠なら対象になります。',kw:'用途 使途 借換 諸費用 引越 家具 家電 カーテン 家財'},
 {b:'ichigin',c:'融資金額',t:'ご融資金額',d:'100万円〜1億円（<b>1万円単位</b>）。所要資金の範囲内かつ当行の審査結果に基づく融資可能額の範囲内。',kw:'いくらまで 上限 単位'},
 {b:'ichigin',c:'融資期間',t:'ご融資期間',d:'2年〜<b>50年</b>（<b>1カ月単位</b>）。3行で最も長く組めます。物件やその他条件によって融資期間が異なる場合があります。',kw:'何年 期間 最長 50年 何年まで 期間は 長さ'},
 {b:'ichigin',c:'金利',t:'新規借入金利（プラン①）',d:'2年固定金利特約型・5年固定金利特約型<b>のみ</b>が対象。<b>当行口座に給与振込をご指定いただいている方（今後ご指定いただける方も含む）</b>が条件です。',kw:'プラン 新規 給与振込 条件 2年 5年'},
@@ -1191,6 +1222,7 @@ var KB=[
 {b:'all',c:'比較',t:'3行の完済時年齢の比較',d:'<b>北陸銀行＝満80歳未満</b>（融資時は満18歳以上71歳未満）／<b>富山第一銀行（プライム）＝満82歳未満</b>／<b>ろうきん＝満81歳未満</b>。40代後半以降のお客様は、この差が借入期間の差になり、月々の金額に直結します。',kw:'完済 年齢 比較 80 81 82 何歳まで 何歳'},
 {b:'all',c:'比較',t:'3行の最長借入期間の比較',d:'<b>北陸銀行＝40年</b>（ただし中古は原則「60年 − 築年数」）／<b>富山第一銀行＝50年</b>（1カ月単位）／<b>ろうきん＝原則40年、一定要件で50年、全期間固定は35年</b>。いずれも完済時年齢の上限が先に効く場合があります。',kw:'期間 最長 比較 40年 50年 何年まで 何年'},
 {b:'all',c:'比較',t:'3行の保証料の比較（意味が違います）',d:'<b>北陸銀行＝0円だが「お借入金利に含まれる」</b>ため、負担がないわけではありません。<b>富山第一（プライム）＝不要</b>。保証付タイプは一括前払いが必要。<b>ろうきん＝0円（ろうきんが負担）</b>。金利にも含まれていない正味ゼロ。<b>同じ0円でも意味が違うので、総支払額で比べてください。</b>',kw:'保証料 比較 0円 意味'},
+{b:'all',c:'比較',t:'引越費用・家財購入費を借りられるのはろうきんだけ',d:'<b>北陸銀行</b>＝諸費用は「登記費用、火災保険料、取扱手数料等」に限られ、<b>引越費用・家財購入費は対象外</b>。<b>富山第一銀行</b>＝諸費用は「登記費用・火災保険料・保証料・事務手数料」で、同じく<b>対象外</b>。<b>ろうきん</b>＝生活資金枠（最高500万円）に「住宅新築・購入にともなう家財購入費用や引越し費用」が明記されており、<b>借入れの対象</b>になります。<br>引越と家具・家電で80〜100万円かかることが多く、<b>自己資金が薄いお客様には決定的な差</b>になります。ろうきんを提案する強い材料です。',kw:'引越 家具 家電 カーテン 家財 使途 対象外 生活資金 比較 自己資金'},
 {b:'all',c:'比較',t:'3行の取扱手数料の比較',d:'<b>北陸銀行＝220,000円（一律）</b>／<b>富山第一＝220,000円または330,000円（審査結果による）</b>＋保証付なら保証会社手数料33,000〜55,000円／<b>ろうきん＝198,000円</b>（生活資金を同時申込なら220,000円）。',kw:'手数料 比較 220000 198000 330000'},
 {b:'all',c:'比較',t:'繰上返済手数料の比較',d:'<b>北陸銀行</b>＝ネットなら一部繰上返済0円。窓口は変動5,500円、固定特約期間中は所定。<b>富山第一</b>＝繰上返済時は所定の手数料。固定金利特約更新手数料は0円。<b>ろうきん</b>＝一部繰上げ返済は無料。全額返済は残高により33,000〜44,000円、ろうきんダイレクトなら無料。',kw:'繰上返済 手数料 比較 無料'},
 {b:'all',c:'比較',t:'疾病保障が無料になる年齢の比較',d:'<b>北陸銀行</b>＝8大疾病保障団信は満50歳以下なら上乗せ0％、満51歳以上は年0.3％。地銀協ライフサポート団信は満51歳以上は取扱なし。<b>富山第一</b>＝11疾病保障付団信は実行時<b>満51歳未満</b>なら上乗せ0％。<b>ろうきん</b>＝オールマイティ保障型（3大疾病）で＋0.20％が目安。<b>3行とも50歳前後が境目です。</b>',kw:'団信 年齢 50歳 51歳 無料 比較 何歳まで 病気 保険 疾病'},
@@ -1268,7 +1300,7 @@ function calcDisc(bk,fk){
  }
  return {disc:B.discMax,initDisc:B.discMax,kazoku:0,discWithKazoku:B.discMax,hits,notes:[]};
 }
-let BANK='hokugin',FIXK='f2',AFIX='same',DISCMODE='max',GOAL=70,PTYPE='mansion';
+let BANK='hokugin',FIXK='f2',AFIX='same',DISCMODE='max',GOAL=70,PTYPE='mansion',REVG='d',REVF='p10';
 
 /* ===== マスタ編集 ===== */
 function buildRateTable(){
@@ -1566,6 +1598,7 @@ function packPrice(g,t,a){
  if(g==='a')return lo;
  if(g==='d')return hi;
  return lo+(hi-lo)*(MIDRATE[g]||0.5);}
+const LIFEKEYS=['hikkoshi','kagu'];
 const FEES=[{k:'chukai',n:'仲介手数料（税込）'},{k:'toki',n:'登記費用・司法書士報酬'},
  {k:'inshi1',n:'印紙税（売買契約書）'},{k:'inshi2',n:'印紙税（金銭消費貸借契約書）'},
  {k:'jimu',n:'取扱手数料'},{k:'hosho',n:'ローン保証料'},
@@ -1579,6 +1612,8 @@ bindSeg('segGoal',v=>{GOAL=+v;calc()});
 bindSeg('segType',v=>{PTYPE=v;$('mansionOnly').style.display=v==='mansion'?'grid':'none';$('kodateOnly').style.display=v==='kodate'?'block':'none';onGrade()});
 bindSeg('segBank',v=>{BANK=v;AFIX='same';onBank()});
 bindSeg('segDisc',v=>{DISCMODE=v;onBank()});
+bindSeg('segRevG',v=>{REVG=v;calc()});
+bindSeg('segRevF',v=>{REVF=v;calc()});
 function onFix(){FIXK=$('fixSel').value;AFIX='same';onBank();}
 function onAfterFix(){AFIX=$('afterFix').value;onBank();}
 
@@ -1644,11 +1679,17 @@ function calcFees(price,reno,loan,years,bankKey,useOv,uwOn){
  o.hikkoshi=reno>=5e6?350000:120000;d.hikkoshi=reno>=5e6?'仮住まい（約3ヶ月）＋引越2回の目安':'引越1回の目安';
  o.kagu=chk('incFurniture')?500000:0;d.kagu=chk('incFurniture')?'新生活の初期費用の目安':'含めない設定';
  if(useOv)FEES.filter(f=>f.k!=='yobi').forEach(f=>{const el=$('fx_'+f.k);if(el&&el.value!==''){o[f.k]=parseFloat(el.value)||0;d[f.k]='手入力';}});
- let sub=0;FEES.filter(f=>f.k!=='yobi').forEach(f=>sub+=o[f.k]||0);
+ /* 引越費用・家財購入費はローンのお使いみちに含まれない銀行が多い。
+    ろうきんの生活資金枠を使う場合のみローンに含められる。 */
+ const canLife=!!(B.uw&&uwOn);
+ let sub=0,extra=0;
+ FEES.filter(f=>f.k!=='yobi').forEach(f=>{const v=o[f.k]||0;
+  if(LIFEKEYS.indexOf(f.k)>=0&&!canLife){extra+=v;d[f.k]=(d[f.k]||'')+'／<b style="color:var(--ng-tx)">ローン対象外・自己資金でご用意</b>';}
+  else{sub+=v;if(LIFEKEYS.indexOf(f.k)>=0)d[f.k]=(d[f.k]||'')+'／<b style="color:var(--ok-tx)">生活資金枠でお借入可</b>';}});
  const yr=numv('yobiRate'),gx=$('grade').value==='x',yon=(!gx||chk('yobiForce'))&&yr>0;
  if(!yon){o.yobi=0;d.yobi=gx?'見積ツールの金額に予備費が含まれるため加算なし':'計上しない設定（0％）';}
  else {o.yobi=reno*yr/100;d.yobi=`工事費 ${man(reno)}万円 × ${yr}％`;}
- return {o,d,total:sub+o.yobi};
+ return {o,d,total:sub+o.yobi,extra,canLife};
 }
 
 /* ===== 試算 ===== */
@@ -1746,6 +1787,8 @@ function rules(R){
  if($('grade').value==='x'&&chk('yobiForce'))add('w',`!!見積ツールから入力した工事費に、予備費${numv('yobiRate')}％を追加で加算しています。見積にすでに予備費が含まれている場合は二重計上になります。`);
  if($('grade').value!=='x'&&numv('yobiRate')<=0)add('w',`!!予備費を0％にしています。中古は解体後の想定外が出やすいため、初回のご提案では見込んでおくことをお勧めします。`);
  if(B.pairNote&&chk('pairOn'))add('n',`<b>夫婦連生保障付の税務上の注意：</b>${B.pairRate?`金利の上乗せは <b>連生プラン① 年${B.pairRate.p1}％／連生プラン② 年${B.pairRate.p2}％</b> です。`:'別途金利の上乗せがあります（率は金融機関にご確認ください）。'}また団信の保険金でローンが完済された場合、<b>相手方の住宅ローンが免除される部分が一時所得とみなされ、所得税の課税対象となる場合があります。</b>お客様には税務署へのご確認をご案内してください。`);
+ if(R.F.extra>0)add('w',`<b>引越費用と家具・家電（${man(R.F.extra)}万円）は${B.short}の住宅ローンでは借りられません。</b>お使いみちが登記費用・火災保険料・取扱手数料等に限られているためです。自己資金でご用意いただく必要があります。@@ろうきんの生活資金枠なら対象になる。自己資金が足りないお客様にはろうきんを提案する材料になる`);
+ if(R.F.canLife)add('o',`引越費用と家具・家電を<b>生活資金枠でお借入れ</b>できます。他行の住宅ローンでは対象外の用途です。`);
  if(B.hosho==='inrate')add('i',`保証料0円と表示されますが、これは<b>お借入金利に含まれている</b>ためです。@@「保証料がかからない」という説明は誤解を招きます`);
  if(B.hosho==='none')add('o',`保証料は${B.short==='一銀'?'不要':'0円（金融機関負担）'}です。金利にも含まれていません。`);
  if(B.jimuAlt&&!B.uw)add('w',`取扱手数料は${yen(B.jimuFixed)}円で計算していますが、審査結果により${yen(B.jimuAlt)}円になる場合があります。@@差額${yen(B.jimuAlt-B.jimuFixed)}円をどう伝えるか事前に整理しておくこと`);
@@ -1996,11 +2039,115 @@ function calc(){
    :`いまのご予算だと工事費は <b>${man(rReno)}万円</b> まで。現在の ${man(reno)}万円 に対し <b>${man(-df)}万円 の超過</b>です。`;
   $('revTalk').innerHTML=`「いまのお支払いが ${yen(rentAll)}円ですよね。同じくらいですと、この物件で <b>${man(rReno)}万円ぐらいのリノベーション</b>ができます。${rG?`${rG}のイメージです。`:''}」`;}
 
+ /* 物件価格の逆算（原則） */
+ (function(){
+  if(!okA){$('backBody').innerHTML='<tr><td colspan="2" style="text-align:left;color:var(--soft);padding:14px">金利が入力されると表示されます。</td></tr>';$('backMsg').innerHTML='';$('backTalk').innerHTML='';return;}
+  const T=capLoan+own;
+  const gl={a:'水回りパック',b:'水回り＋内装',c:'部分リノベ',d:'フルリノベ'}[REVG];
+  const rw=packPrice(REVG,PTYPE,area);
+  const yr=numv('yobiRate'), yb=rw*yr/100;
+  const workAll=rw+yb;
+  const rest=T-workAll;
+  let P,fee,feeLbl,ex=0;
+  if(REVF==='p10'){
+   P=rest*0.9; fee=rest*0.1; feeLbl='残り × 10％';
+   const F3=calcFees(Math.max(0,P),rw,capLoan,years,BANK,false,chk('uwOn'));
+   ex=F3.o.hikkoshi+F3.o.kagu;
+  }else{
+   P=Math.max(0,rest); let F3;
+   for(let i=0;i<8;i++){F3=calcFees(Math.max(0,P),rw,capLoan,years,BANK,true,chk('uwOn'));
+    P=T-rw-(F3.total);}
+   fee=T-rw-P; feeLbl='明細の合計（予備費・引越・家具家電を含む）';
+  }
+  const FLOOR=3000000;   /* 富山でおよそこの価格帯より下の物件はほぼありません */
+  const ok2=P>0&&rest>0;
+  const tooLow=ok2&&P<FLOOR;
+  const r=(lb,v,cls,sub)=>`<tr${cls||''}><td style="width:52%">${lb}${sub?`<br><span style="font-weight:400;font-size:11px;color:var(--soft)">${sub}</span>`:''}</td><td class="n">${v}</td></tr>`;
+  $('backBody').innerHTML=
+   r('お借入上限',man(capLoan)+'万円',null,`終了後金利 ${r2.toFixed(3)}％・${years}年・${R.LU>1?(R.LU/10000)+'万円単位に切下':''}`)+
+   r('＋ ご自己資金',man(own)+'万円')+
+   r('＝ ご予算の総額','<b>'+man(T)+'万円</b>',' class="hl"')+
+   r(`− リノベ工事費（${gl}）`,'− '+man(rw)+'万円',null,PTYPE==='mansion'?`マンション ${area}㎡`:`戸建 ${area}㎡`)+
+   r(`− 予備費 ${yr}％`,'− '+man(yb)+'万円')+
+   r(`− 諸費用`,'− '+man(fee)+'万円',null,feeLbl)+
+   `<tr class="tot"><td><b>＝ 物件価格の目安</b></td><td class="n" style="font-size:17px">${ok2?man(P)+'万円':'—'}</td></tr>`;
+  if(!ok2){
+   $('backMsg').className='msg n';
+   $('backMsg').innerHTML=`<b>この工事の前提では、物件価格が確保できません。</b>ご予算 ${man(T)}万円 に対して工事関連が ${man(workAll)}万円 かかるため、物件に回せる分が残りません。<b>工事の前提を軽いグレードに変えるか</b>、月々の許容額を上げる、期間を延ばすなどのご検討が必要です。`;
+   $('backTalk').innerHTML=`「いまのご予算だと、${gl}まで入れると物件が買えなくなってしまいます。工事の範囲を少し絞るか、月々のご予算を見直すか、ご相談させてください。」`;
+   return;}
+  if(tooLow){
+   const alt=['c','b','a'].map(g=>{const rw2=packPrice(g,PTYPE,area),yb2=rw2*yr/100,rest2=T-rw2-yb2;
+    return {g,lb:{a:'水回りパック',b:'水回り＋内装',c:'部分リノベ'}[g],P:rest2*0.9};}).filter(x=>x.P>=FLOOR);
+   $('backMsg').className='msg n';
+   $('backMsg').innerHTML=`<b>物件価格が ${man(P)}万円 となり、この価格帯の物件はほぼありません。</b>${gl}を前提にすると、いまのご予算では物件に回せる金額が足りません。<br>
+    ${alt.length?`<b>工事の前提を変えると次のようになります。</b><br>${alt.map(x=>`・<b>${x.lb}</b>なら物件価格 <b>${man(x.P)}万円</b>`).join('<br>')}`:'<b>どのグレードでも物件価格が確保できません。</b>月々の許容額を上げる、完済年齢を延ばす、自己資金を増やすなどのご検討が必要です。'}`;
+   $('backTalk').innerHTML=`「正直にお伝えします。<b>いまのお支払いの範囲で${gl}まで入れると、買える物件がほとんどなくなってしまいます。</b><br>
+    ${alt.length?`工事の範囲を<b>${alt[0].lb}</b>にすれば、物件価格 ${man(alt[0].P)}万円まで見られます。そのくらいの物件でしたら選択肢があります。`:'月々のご予算を少し上げていただくか、返済期間を延ばすご検討をお願いできますでしょうか。'}<br>
+    <b>無理のある計画をお勧めするわけにはいきませんので</b>、いちど条件を整理させてください。」`;
+   return;}
+  $('backMsg').className='msg o';
+  $('backMsg').innerHTML=`お借入上限からリノベーション費用と諸費用を引いて、<b>物件価格の目安は ${man(P)}万円</b>です。この価格帯で物件をお探しします。
+   ${REVF==='p10'?`<br><b>諸費用10％は仲介手数料・登記費用・取扱手数料・火災保険・印紙税・調査費用などの見込み</b>です。${ex>0?`<br><b>引越費用と家具・家電（約${man(ex)}万円）は含まれていません。</b>${R.F.canLife?'ろうきんの生活資金枠でお借入れできますので、上乗せ額に含めてご検討ください。':`<b>${B.short}の住宅ローンのお使いみちに含まれないため、自己資金でのご用意が必要です。</b>ろうきんの生活資金枠なら対象になります。`}`:''}`
+   :`<br>明細から計算しています。予備費・引越費用・家具家電も含んだ金額です。`}
+   <br>${REVG==='d'?'工事は<b>フルリノベーション（原則）</b>で計算しています。':`工事は<b>${gl}</b>で計算しています（原則のフルリノベから変更中）。`}`;
+  $('backTalk').innerHTML=`「ご予算の考え方をご説明します。<b>まずお借入いただける上限が ${man(capLoan)}万円</b>、ご自己資金${man(own)}万円を足して<b>総額 ${man(T)}万円</b>です。<br>
+   ここから<b>リノベーション費用 ${man(rw)}万円</b>と、中古ですので<b>予備費 ${man(yb)}万円</b>、それに<b>諸費用 ${man(fee)}万円</b>を引きます。<br>
+   <b>残りの ${man(P)}万円が、物件に使える金額です。</b>この価格帯でお探しすれば、${gl}をして今のお支払いと同じくらいに収まります。」`;
+ })();
+
+ /* 配分表：総予算から物件価格とリノベ費用の組み合わせを出す */
+ (function(){
+  if(!okA){$('allocBody').innerHTML='<tr><td colspan="4" style="text-align:left;color:var(--soft);padding:14px">金利が入力されると表示されます。</td></tr>';$('allocMsg').innerHTML='';$('allocTalk').innerHTML='';return;}
+  const T=capLoan+own, pk=PACK[PTYPE];
+  const solve=(P)=>{let R=Math.max(0,T-P-1e6),F2;
+   for(let i=0;i<8;i++){F2=calcFees(P,Math.max(0,R),capLoan,years,BANK,false,chk('uwOn'));R=T-P-F2.total;}
+   return {R:Math.max(0,R),fee:F2.total};};
+  const gname=(R)=>{if(R<=0)return null;
+   const ranks=[['d','D フルリノベ'],['c','C 部分リノベ'],['b','B 水回り＋内装'],['a','A 水回りパック']];
+   for(const [g,lb] of ranks){if(R>=packPrice(g,PTYPE,area)*0.95)return lb;}return null;};
+  const step=1000000;
+  const maxWork=fullPack(PTYPE,area)*1.3;   /* フルリノベ＋予備費30％が工事関連の上限 */
+  const minWork=pk.mizu*1.3*0.9;            /* 水回りパックを下回ったら打ち切り */
+  let rows=[];
+  for(let P=step*5;P<=T;P+=step){const r=solve(P);
+   if(r.R>maxWork)continue;                 /* 工事に回しきれない＝物件が安すぎる */
+   if(r.R<minWork)break;                    /* 水回りにも届かない */
+   rows.push({P,R:r.R,fee:r.fee});}
+  if(!rows.length){
+   $('allocBody').innerHTML='<tr><td colspan="4" style="text-align:left;color:var(--soft);padding:14px">このご予算では、物件とリノベーションの現実的な組み合わせが作れません。月々の許容額を上げるか、完済年齢の見直しをご検討ください。</td></tr>';
+   $('allocMsg').className='msg w';
+   $('allocMsg').innerHTML=`ご予算の総額は <b>${man(T)}万円</b>です。${T<pk.mizu*1.3+3000000?'物件価格と水回りリノベを合わせた最低ラインに届いていません。':'この面積のフルリノベーションを超える工事費になるため、組み合わせを絞り込めませんでした。面積を実際の物件に合わせてください。'}`;
+   $('allocTalk').innerHTML='（ご予算の条件を調整すると配分の目安が表示されます）';return;}
+  if(rows.length>7){const pick=[];for(let i=0;i<7;i++)pick.push(rows[Math.round(i*(rows.length-1)/6)]);rows=pick;}
+  const cur=numv('price')*1e4;
+  let ab='';
+  rows.forEach(r=>{
+   const rw=r.R/1.3, yb=r.R-rw, g=gname(rw);
+   const hit=Math.abs(r.P-cur)<step/2;
+   ab+=`<tr${hit?' class="hl"':''}><td class="n">${man(r.P)}万円${hit?' <span class="pill rec">いまの入力</span>':''}</td>
+    <td class="n"><b>${man(rw)}万円</b></td><td class="n">${man(yb)}万円</td>
+    <td>${g?`<b>${g}</b>`:'<span style="color:var(--soft)">水回りに届きません</span>'}</td></tr>`;});
+  $('allocBody').innerHTML=ab;
+  const top=rows[0],bot=rows[rows.length-1];
+  const topR=top.R/1.3, botR=bot.R/1.3;
+  const gt=gname(topR)||'水回り未満', gb=gname(botR)||'水回り未満';
+  const mo=Math.round(pmt(Math.max(0,top.P+top.R+top.fee-own),r2,n)+keep+other+olAfter+uwPay);
+  $('allocMsg').className='msg o';
+  $('allocMsg').innerHTML=`<b>ご予算の総額は ${man(T)}万円</b>（お借入可能額 ${man(capLoan)}万円 ＋ ご自己資金 ${man(own)}万円）。ここから諸費用を引いた残りを、物件価格とリノベーション費用に配分します。<br>
+   <b>どの組み合わせでも実質月額は約 ${yen(mo)}円</b>です（維持費込み・${R.fk==='fAll'?'全期間固定':'特約終了後の金利'}で計算）。総額を使い切る前提なので、配分を変えても月々は変わりません。<br>
+   工事費は<b>予備費30％を除いた本体金額</b>です。表の下限は水回りパック、上限はこの面積（${area}㎡）のフルリノベーションで打ち切っています。`;
+  $('allocTalk').innerHTML=`「ご予算の総額は <b>${man(T)}万円</b>です。この中で、物件にいくら、リノベーションにいくら使うかを決めていきます。<b>どの組み合わせでも月々は約${yen(mo)}円で変わりません。</b><br>
+   たとえば <b>${man(top.P)}万円の物件</b>なら工事に ${man(topR)}万円 かけられて<b>${gt}</b>ができます。<b>${man(bot.P)}万円の物件</b>だと工事は ${man(botR)}万円 で<b>${gb}</b>くらいです。<br>
+   <b>お手頃な物件をしっかり直すか、きれいな物件に軽く手を入れるか。</b>どちらがお好みでしょうか。そこが決まれば、お探しする物件の条件がはっきりします。」`;
+ })();
+
  /* E */
  let fb='';
  FEES.forEach(f=>{const v=F.o[f.k]||0;if(v===0&&f.k==='kagu')return;
   fb+=`<tr><td>${f.n}</td><td class="n">${yen(v)}円</td><td style="text-align:left;font-size:11.5px;color:var(--mid)">${F.d[f.k]||''}</td></tr>`});
- fb+=`<tr class="tot"><td>諸費用 合計</td><td class="n">${yen(F.total)}円</td><td style="text-align:left;font-size:11.5px">物件価格＋工事費の約 ${(F.total/(price+reno)*100).toFixed(1)}％</td></tr>`;
+ fb+=`<tr class="tot"><td>諸費用 合計（ローンに含められる分）</td><td class="n">${yen(F.total)}円</td><td style="text-align:left;font-size:11.5px">物件価格＋工事費の約 ${(F.total/(price+reno)*100).toFixed(1)}％</td></tr>`;
+ if(F.extra>0)fb+=`<tr><td colspan="3" style="background:var(--ng-bg);border-top:2px solid var(--ng-ln);padding:9px 11px;font-size:12px;color:var(--ng-tx)"><b>別途ご用意いただく費用（ローン対象外）　${yen(F.extra)}円</b><br>引越費用と家具・家電は${B.short}の住宅ローンのお使いみちに含まれません。自己資金でのご用意が必要です。${M.banks.rokin.uw?'<br>ろうきんの生活資金枠（最高500万円）なら、これらもお借入れの対象になります。':''}</td></tr>`;
  $('feeBody').innerHTML=fb;
 
  /* F */
@@ -2074,7 +2221,7 @@ function doCompare(){
 const IDS=['cname','age','income','job','tenure','rent','rentkanri','rentpark','otherLoan','otherBal','own','gift','price','area','built','tax','kanri','shuzen','jishu','grade','reno','r1','baseR','disc','up','tokuyaku','uwAmt','uwRate','yobiRate','allow'];
 const CHKS=['incFee','incFurniture','uwOn','uwKagu','uwCar','uwEdu','uwMatome','altOn','pairOn','yobiForce','chukoOff'];
 function doSave(){
- const d={v:9,goal:GOAL,ptype:PTYPE,bank:BANK,fixk:FIXK,afix:AFIX,disc:DISCMODE,diag:diagState(),inc:{},ck:{}};
+ const d={v:10,goal:GOAL,ptype:PTYPE,bank:BANK,fixk:FIXK,afix:AFIX,disc:DISCMODE,revg:REVG,revf:REVF,diag:diagState(),inc:{},ck:{}};
  IDS.forEach(i=>d[i]=$(i).value);CHKS.forEach(i=>d.ck[i]=chk(i));
  FEES.filter(f=>f.k!=='yobi').forEach(f=>d.inc[f.k]=$('fx_'+f.k).value);
  const nm=($('cname').value||'資金計画').replace(/[\\/:*?"<>|]/g,'')+'_'+new Date().toISOString().slice(0,10)+'.json';
@@ -2089,6 +2236,8 @@ function doLoad(el){const f=el.files[0];if(!f)return;const r=new FileReader();
   if(d.fixk)FIXK=d.fixk; if(d.afix)AFIX=d.afix;
   if(d.disc){DISCMODE=d.disc;setSeg('segDisc',DISCMODE)}
   if(d.diag)DIAG=d.diag;
+  if(d.revg){REVG=d.revg;setSeg('segRevG',REVG)}
+  if(d.revf){REVF=d.revf;setSeg('segRevF',REVF)}
   onBank();
   IDS.forEach(i=>{if(d[i]!==undefined)$(i).value=d[i]});
   if(d.ck)CHKS.forEach(i=>{if(d.ck[i]!==undefined)$(i).checked=d.ck[i]});
