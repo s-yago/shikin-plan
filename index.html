@@ -289,7 +289,8 @@ body.client #modeHint{display:block}
     <div class="fld"><label>管理費 <span class="hint">月額</span></label><div class="unit"><input type="number" id="kanri" value="8000"><span class="u">円</span></div></div>
     <div class="fld"><label>修繕積立金 <span class="hint">月額</span></label><div class="unit"><input type="number" id="shuzen" value="11000"><span class="u">円</span></div></div>
    </div>
-   <div class="fld" id="kodateOnly" style="display:none"><label>将来修繕への自主積立 <span class="hint">月額</span></label><div class="unit"><input type="number" id="jishu" value="12000"><span class="u">円</span></div></div>
+   <div class="note" id="kanriSum" style="display:none"></div>
+
   </div>
  </div>
 
@@ -1416,9 +1417,9 @@ function runDiag(){
   rows.push({k,R:R2,dc});
  });
  if(rows.length<2){$('diagResult').innerHTML='<div class="msg n" style="margin:0">金利が入っている商品が足りません。金利マスタで2つ以上の商品に金利を入力してください。</div>';return;}
- const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu');
+ const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):0;
  const other=numv('tax')/12;
- rows.forEach(x=>{x.mo=x.R.m1+x.R.uwPay+keep+other+x.R.F.o.kasai/60+(x.R.matome?0:x.R.olPay);});
+ rows.forEach(x=>{x.mo=x.R.m1+x.R.uwPay;});  /* ローン返済額（本体＋上乗せ）のみ。維持費は銀行によらず同額なので比較に含めない */
  rows.sort((a,b)=>a.mo-b.mo);
  const best=rows[0];
  const cheapTotal=rows.reduce((a,b)=>b.R.totAll<a.R.totAll?b:a);
@@ -1426,20 +1427,21 @@ function runDiag(){
  let h='<div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--navy)">診断結果（月々のお支払いが軽い順）</div>';
  if(yrs.length>1)h+=`<div class="msg n" style="margin:0 0 12px"><b>借入期間が商品によって違います（${rows.map(x=>x.R.B.short+' '+x.R.years+'年').join('／')}）。</b>期間が短いほど月々は高く、総支払額は少なくなります。<b>単純な優劣ではありません。</b>期間の違いがどこから来ているかを必ずご確認ください。</div>`;
  if(cheapTotal.k!==best.k)h+=`<div class="msg w" style="margin:0 0 12px"><b>月々がいちばん軽いのは ${best.R.B.short}、総支払額がいちばん少ないのは ${cheapTotal.R.B.short}</b>（${man(cheapTotal.R.totAll)}万円）です。どちらを重視するかお客様とご相談ください。</div>`;
+ h+=`<div class="msg g" style="margin:0 0 12px;padding:9px 12px;font-size:12px;background:var(--tint);border:1px solid var(--line);color:var(--mid)">ここでの月々は<b>ローンの返済額</b>のみで比べています。管理費・修繕積立金・固定資産税・火災保険はどの銀行を選んでも同額のため、比較には含めていません。${PTYPE==='mansion'?'管理費・修繕積立金の合計は「2 物件情報」の欄に表示しています。':''}</div>`;
  rows.forEach((x,i)=>{
   const B=x.R.B,dc=x.dc,R=x.R;
-  const rank=i+1,top=i===0;
+  const rank=i+1,top=i===0;const payShow=x.mo;
   h+=`<div style="border:${top?'2px solid var(--ok-ln)':'1px solid var(--line)'};background:${top?'var(--ok-bg)':'#fff'};border-radius:10px;padding:14px 16px;margin-bottom:11px">
    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px">
     <span style="font-size:19px;font-weight:700;color:${top?'var(--ok-tx)':'var(--soft)'}">${rank}位</span>
     <span style="font-size:15px;font-weight:700;color:var(--navy)">${B.name}</span>
     ${top?'<span class="pill bst">月々が最も軽い</span>':`<span style="font-size:12px;color:var(--orange-d)">1位より月 ＋${yen(x.mo-best.mo)}円</span>`}
+    <span style="font-size:11px;color:var(--soft)">（ローン返済額のみで比較）</span>
     ${x.k===cheapTotal.k?'<span class="pill gd">総支払額が最少</span>':''}
    </div>
    <table style="margin-bottom:9px"><tbody>
     <tr><td style="width:42%">当初 ${fixLabel(R.fk)}</td><td class="n">${R.r1.toFixed(3)}％／月 ${yen(R.m1+R.uwPay)}円<br><span style="font-weight:400;font-size:11px;color:var(--soft)">${R.initNote||''}</span></td></tr>
-    <tr class="hl"><td><b>実質月額（維持費込・当初）</b></td><td class="n"><b>${yen(x.mo)}円</b></td></tr>
-    <tr><td>特約終了後</td><td class="n">${R.stTen!=null?`店頭 ${R.stTen.toFixed(3)}％ − 引下げ ${dc.disc.toFixed(2)}％ ＝ <b>${R.r2.toFixed(3)}％</b>／月 ${yen(R.m2+R.uwPay)}円`:'—'}</td></tr>
+       <tr><td>特約終了後</td><td class="n">${R.stTen!=null?`店頭 ${R.stTen.toFixed(3)}％ − 引下げ ${dc.disc.toFixed(2)}％ ＝ <b>${R.r2.toFixed(3)}％</b>／月 ${yen(R.m2+R.uwPay)}円`:'—'}</td></tr>
     <tr><td>諸費用</td><td class="n">${man(R.F.total)}万円（取扱手数料 ${yen(R.F.o.jimu)}円／保証料 ${R.F.o.hosho>0?yen(R.F.o.hosho)+'円':(B.hosho==='inrate'?'金利に含む':'0円')}）</td></tr>
     <tr><td>借入期間</td><td class="n">${R.years}年（完済 ${numv('age')+R.years}歳）</td></tr>
     <tr class="tot"><td>総支払額</td><td class="n">${man(R.totAll)}万円</td></tr>
@@ -1609,7 +1611,7 @@ const FEES=[{k:'chukai',n:'仲介手数料（税込）'},{k:'toki',n:'登記費�
 function bindSeg(id,cb){$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{
  $(id).querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');cb(b.dataset.v);});}
 bindSeg('segGoal',v=>{GOAL=+v;calc()});
-bindSeg('segType',v=>{PTYPE=v;$('mansionOnly').style.display=v==='mansion'?'grid':'none';$('kodateOnly').style.display=v==='kodate'?'block':'none';onGrade()});
+bindSeg('segType',v=>{PTYPE=v;$('mansionOnly').style.display=v==='mansion'?'grid':'none';onGrade()});
 bindSeg('segBank',v=>{BANK=v;AFIX='same';onBank()});
 bindSeg('segDisc',v=>{DISCMODE=v;onBank()});
 bindSeg('segRevG',v=>{REVG=v;calc()});
@@ -1855,6 +1857,11 @@ function calc(){
   }else{$('chukoFld').style.display='none';$('chukoOff').checked=false;}
  })();
  $('builtWarn').innerHTML=bw;
+ if(PTYPE==='mansion'){
+  const ks=numv('kanri')+numv('shuzen');
+  $('kanriSum').style.display='block';
+  $('kanriSum').innerHTML=`管理費＋修繕積立金の合計：<b style="color:var(--navy)">${yen(ks)}円／月</b>`;
+ }else{$('kanriSum').style.display='none';}
 
  /* 予備費 */
  (function(){
@@ -1921,7 +1928,7 @@ function calc(){
   $('heroNote').innerHTML='※ '+hn;
  })();
  $('pay1').textContent=ok?yen(m1+uwPay):'—';$('pay2').textContent=okA?yen(m2+uwPay):'—';
- const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu');
+ const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):0;
  const other=numv('tax')/12+F.o.kasai/60;
  const olAfter=matome?0:olPay;
  const uwL=B.uwLabel?B.uwLabel.replace('返済分',''):'上乗せ';
@@ -1949,7 +1956,7 @@ function calc(){
  (function(){
   const lg=[['var(--b1)','住宅ローン']];
   if(uwPay>0)lg.push(['var(--b5)',B.uwLabel||'上乗せ返済分']);
-  if(keep>0)lg.push(['var(--b2)',PTYPE==='mansion'?'管理費・修繕積立金':'将来修繕への自主積立']);
+  if(keep>0)lg.push(['var(--b2)','管理費・修繕積立金']);
   if(other>0)lg.push(['var(--b3)','固定資産税・火災保険（月割）']);
   if(numv('rentkanri')+numv('rentpark')>0)lg.push(['var(--b4)','いまの管理費・駐車場']);
   if(olPay>0)lg.push(['var(--b6)','他社ローン']);
@@ -2190,7 +2197,7 @@ function doCompare(){
  const skipped=rows.filter(r=>!r.ready).map(r=>r.B.short);
  rows=rows.filter(r=>r.ready);
  if(rows.length<2){alert('比較できません。\n\n金利がそろっている商品が'+rows.length+'件しかありません。\n2つ以上の商品に当初適用金利と店頭基準金利を入力してください。');openRates();return;}
- const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):numv('jishu'),other=numv('tax')/12;
+ const keep=PTYPE==='mansion'?(numv('kanri')+numv('shuzen')):0,other=numv('tax')/12;
  const best=rows.reduce((a,b)=>b.totAll<a.totAll?b:a);
  $('cmpHead').innerHTML='<tr><th>比較項目</th>'+rows.map(r=>`<th>${r.B.short}${r.bankKey===best.bankKey?' <span class="pill bst">総額最少</span>':''}</th>`).join('')+'</tr>';
  const line=(lb,f,cls)=>`<tr${cls||''}><td>${lb}</td>${rows.map(r=>`<td class="n">${f(r)}</td>`).join('')}</tr>`;
@@ -2209,7 +2216,6 @@ function doCompare(){
  h+=line('諸費用 合計',r=>man(r.F.total)+'万円');
  h+=line('当初の月額',r=>`<b>${yen(r.m1+r.uwPay)}円</b>`,' class="hl"');
  h+=line('終了後の月額',r=>r.fk==='fAll'?'同額':yen(r.m2+r.uwPay)+'円');
- h+=line('実質月額（維持費込・当初）',r=>yen(r.m1+r.uwPay+keep+other+r.F.o.kasai/60+(r.matome?0:r.olPay))+'円');
  h+=line('総返済額',r=>man(r.totRepay+r.uwTot)+'万円');
  if(rows.some(r=>r.olRemain>0)||rows.some(r=>r.matome))
   h+=line('残る他社ローン',r=>r.olRemain>0?`${man(r.olRemain)}万円<br><span style="font-weight:400;font-size:11px;color:var(--soft)">月 ${yen(r.olPay)}円 継続</span>`:'<span class="pill gd">借換済</span>');
@@ -2230,7 +2236,7 @@ function doCompare(){
 }
 
 /* ===== 保存 ===== */
-const IDS=['cname','age','income','job','tenure','rent','rentkanri','rentpark','otherLoan','otherBal','own','gift','price','area','built','tax','kanri','shuzen','jishu','grade','reno','r1','baseR','disc','up','tokuyaku','uwAmt','uwRate','yobiRate','allow'];
+const IDS=['cname','age','income','job','tenure','rent','rentkanri','rentpark','otherLoan','otherBal','own','gift','price','area','built','tax','kanri','shuzen','grade','reno','r1','baseR','disc','up','tokuyaku','uwAmt','uwRate','yobiRate','allow'];
 const CHKS=['incFee','incFurniture','uwOn','uwKagu','uwCar','uwEdu','uwMatome','altOn','pairOn','yobiForce','chukoOff'];
 function doSave(){
  const d={v:10,goal:GOAL,ptype:PTYPE,bank:BANK,fixk:FIXK,afix:AFIX,disc:DISCMODE,revg:REVG,revf:REVF,diag:diagState(),inc:{},ck:{}};
@@ -2243,7 +2249,7 @@ function doSave(){
 function doLoad(el){const f=el.files[0];if(!f)return;const r=new FileReader();
  r.onload=e=>{try{const d=JSON.parse(e.target.result);
   if(d.goal){GOAL=+d.goal;setSeg('segGoal',GOAL)}
-  if(d.ptype){PTYPE=d.ptype;setSeg('segType',PTYPE);$('mansionOnly').style.display=PTYPE==='mansion'?'grid':'none';$('kodateOnly').style.display=PTYPE==='kodate'?'block':'none'}
+  if(d.ptype){PTYPE=d.ptype;setSeg('segType',PTYPE);$('mansionOnly').style.display=PTYPE==='mansion'?'grid':'none'}
   if(d.bank&&M.banks[d.bank]){BANK=d.bank;setSeg('segBank',BANK)}
   if(d.fixk)FIXK=d.fixk; if(d.afix)AFIX=d.afix;
   if(d.disc){DISCMODE=d.disc;setSeg('segDisc',DISCMODE)}
